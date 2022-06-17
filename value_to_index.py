@@ -1,5 +1,13 @@
 # convert values to indexes on their respective grids
 
+def home_time_to_index(home_time):
+  if home_time < 0:
+    return 0
+  elif home_time > 0:
+    return 2
+  else:
+    return 1
+
 def exp_to_index(exp):   # levels grid: 0, 1-2, 3-4, 5-10, 11+
   if exp == 0:
     return 0

@@ -2,59 +2,75 @@
 DRAW_B = 1
 DRAW_F = 100
 cohort = 1980
-
+men_full_index_array = [2, 3, 8, 9, 14, 15]
+men_part_index_array = [4, 5, 10, 11, 16, 17]
+men_unemployed_index_array = [0, 1, 6, 7, 12, 13]
+pregnancy_index_array = [1, 3, 5, 7, 9, 11, 13, 15, 17]
+max_school = 14  # 30 - 17
+max_1970 = 36
 NO_KIDS = 0
 beta0 = 0.983  # discount rate
 MINIMUM_UTILITY = float('-inf')
 AGE_VALUES = [18, 18, 20, 22, 25]
 exp_vector = [0, 2, 4, 8, 16]  # experience - 5 point grid
-EXP_SIZE = 5
-UB_H = 1000  # UNEMPLOYMENT BENEFIT HUSBAND
-UB_W = 1000  # UNEMPLOYMENT BENEFIT WIFE
-KIDS_SIZE = 4 # number of children: (0, 1, 2, 3+)
+home_time_vector = [0, 1, 2]
+ub_h = 1000  # UNEMPLOYMENT BENEFIT HUSBAND
+ub_w = 1000  # UNEMPLOYMENT BENEFIT WIFE
 # work status: (unemp, emp)
 UNEMP = 0
 EMP = 1
-WORK_SIZE = 2
 # ability wife/husband: (low, medium, high)) + match quality: (high, medium, low)
 normal_vector = [-1.150, 0.0, 1.150]
-ABILITY_SIZE = 3
-MATCH_Q_SIZE = 3
 # marital status: (unmarried, married)
 UNMARRIED = 0
 MARRIED = 1
 # school groups
-SCHOOL_SIZE = 5
+school_size = 5
+exp_size = 5
+kids_size = 4    # number of children: (0, 1, 2, 3+)
+ability_size = 3
+home_time_size = 3
+mother_size = 2
+health_size = 2
 # maximum fertility age
 MAX_FERTILITY_AGE = 40
-eta1 = 0.194 # fraction from parents net income  that one kid get
-eta2 = 0.293 # fraction from parents net income that 2 kids get
-eta3 = 0.367 # fraction from parents net  income that 3 kids get
-eta4 = 0.423 # fraction from parents net income  that 4 kids get
-scale = 0.707 # fraction of public consumption 
-BP = 0.5 # FIXED BARGENING POWER
+eta1 = 0.194   # fraction from parents net income  that one kid get
+eta2 = 0.293   # fraction from parents net income that 2 kids get
+eta3 = 0.367   # fraction from parents net  income that 3 kids get
+eta4 = 0.423   # fraction from parents net income  that 4 kids get
+scale = 0.707  # fraction of public consumption
+bp = 0.5       # bargaining power
 GRID = 3
-AGE = 16 # initial age
-max_period = 44 # retirement
-GOOD = 1 # health status
-POOR = 2
+AGE = 17          # initial age
+max_period = 43  # retirement
+GOOD = 0 # health status
+POOR = 1
 HK1 = 1 # 0 - 2 years of experience
 HK2 = 4 # 3 - 5 years of experience
 HK3 = 8 # 6 - 10 years of experience
 HK4 = 12 # 11 + years of experience
 
-m_education = 0.06 # probability of collage educated mother - married women with CG + PC at age 45 (no earlier data), cohort 1915
-m_education_70 = 0.06 # probability of collage educated mother - married women with CG + PC at age 40, cohort 1925
-m_education_80 = 0.11 # probability of collage educated mother - married women with CG + PC at age 40, cohort 1935
-m_marital = 0.20 # probability of married mother
-m_marital_70 = 0.27 # probability  of married mother
-m_marital_80 = 0.29 # probability  of married mother
-m_newcommer = 0.1 # probability mother was an immigrant
-m_newcommer_70 = 0.1 # probability mother was an immigrant
-m_newcommer_80 = 0.1 # probability mother was an immigrant
+mother_hispanic_newcommer_60 = 0.1      # probability mother was an immigrant
+mother_hispanic_newcommer_70 = 0.1      # probability mother was an immigrant
+mother_hispanic_newcommer_80 = 0.1      # probability mother was an immigrant
+mother_hispanic_newcommer_90 = 0.1      # probability mother was an immigrant
+#                  M=0,C=0	 M=1,C=0	M=0,C=1	 M=1,C=1
+mother_1960_white    = [6.06,	88.71,	89.16]
+mother_1960_black    = [30.40,	94.30,	94.3]
+mother_1960_hispanic = [13.62,	94.37,	95.31]
+mother_1970_white	   = [11.28,	82.16,	83.48]
+mother_1970_black    = [45.26,	87.75,	90.52]
+mother_1970_hispanic = [21.76,	95.30,	96.3]
+mother_1980_white    = [16.24,	81.74,	83.12]
+mother_1980_black	   = [57.42,	92.58,	95.31]
+mother_1980_hispanic = [24.22,	93.06,	93.77]
+mother_1990_white    = [19.72,	74.51,	76.81]
+mother_1990_black	   = [56.66,	87.67,	92.24]
+mother_1990_hispanic = [25.16,	90.99,	91.93]
 
-cb_const = 4317.681 # child benefit for single mom + 1 kid - annualy
-cb_per_child = 1517.235
+
+cb_const_60 = 4317.681 # child benefit for single mom + 1 kid - annualy
+cb_per_child_60 = 1517.235
 cb_const_70 = 4749.394 # child benefit for single mom + 1 kid - annualy
 cb_per_child_70 = 1179.676
 cb_const_80 = 4530.784 # child benefit for single mom + 1 kid - annualy
