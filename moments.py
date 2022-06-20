@@ -1,14 +1,16 @@
 import numpy as np
 import constant_parameters as c
 from tabulate import tabulate
+from cohorts import cohort
 
 
 class ActualMoments:
-  actual_married_moments = np.loadtxt("married1970white.txt")
-  actual_unmarried_moments = np.loadtxt("unmarried1970white.txt")
-  actual_marr_divorce_moments = np.loadtxt("marr_divorce1970white.txt")
-  actual_school_moments = np.loadtxt("school1970white.txt")
-  actual_assortative_moments = np.loadtxt("assortative1970white.txt")
+  def __init__(self):
+    self.actual_married_moments = np.loadtxt("input/married"+cohort+".txt")
+    self.actual_unmarried_moments = np.loadtxt("input/unmarried"+cohort+".txt")
+    self.actual_marr_divorce_moments = np.loadtxt("input/marr_divorce"+cohort+".txt")
+    self.actual_school_moments = np.loadtxt("input/school"+cohort+".txt")
+    self.actual_assortative_moments = np.loadtxt("input/assortative"+cohort+".txt")
 
 
 class Moments:
@@ -36,6 +38,7 @@ def calculate_moments(m, display_moments):
   #age_arr = np.arange(17, 17+c.max_period).reshape((1, c.max_period))
   #print(age_arr)
   age_arr = np.arange(17, 17+c.max_period)
+  actual = ActualMoments()
 
   estimated_married_moments_w = np.c_[age_arr, (m.fertility_moments_married.T/m.marriage_moments).T,
                                       m.wage_moments_wife_married/m.wage_counter_wife_married,
@@ -56,7 +59,7 @@ def calculate_moments(m, display_moments):
   ##################################################################################################
   age_arr_1970 = np.arange(17, 17+c.max_1970)
   estimated_marr_divorce_moments = np.c_[age_arr_1970, (m.marriage_moments.T[0:36] / c.DRAW_F),
-                                         (m.divorce_moments.T[0:36] / c.DRAW_F), ActualMoments.actual_marr_divorce_moments[36:72,3:5]]
+                                         (m.divorce_moments.T[0:36] / c.DRAW_F), actual.actual_marr_divorce_moments[36:72,3:5]]
 
   headers = ["Age", "marriage", "divorce", "married", "divorce" ]
   table = tabulate(estimated_marr_divorce_moments, headers, floatfmt=".2f", tablefmt="simple")
@@ -64,14 +67,14 @@ def calculate_moments(m, display_moments):
   print(table)
   ###################################################################################################
   school_age_arr = np.arange(17, 17+c.max_school)
-  estimated_school_moments = np.c_[school_age_arr, (m.school_moments_wife / c.DRAW_F), ActualMoments.actual_school_moments[14:29, 3:8] ]
+  estimated_school_moments = np.c_[school_age_arr, (m.school_moments_wife / c.DRAW_F), actual.actual_school_moments[14:29, 3:8] ]
 
   headers = ["Age", "HSD", "HSG", "SC", "CG", "PC", "HSD", "HSG", "SC", "CG", "PC"]
   print("           Fitted         ", "            Actual    ")
   table = tabulate(estimated_school_moments, headers, floatfmt=".2f", tablefmt="simple")
   print(table)
   ###################################################################################################
-  estimated_assortative_moments = np.c_[ (m.assortative_moments / m.assortative_counter), ActualMoments.actual_assortative_moments ]
+  estimated_assortative_moments = np.c_[ (m.assortative_moments / m.assortative_counter), actual.actual_assortative_moments ]
 
   print("assortative mating:", "       Fitted         ", "            Actual    ")
   headers = [ "HSD", "HSG", "SC", "CG", "PC", " ", "HSD", "HSG", "SC", "CG", "PC"]

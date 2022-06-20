@@ -1,4 +1,4 @@
-import parameters as p
+from parameters import p
 import constant_parameters as c
 from draw_wife import Wife
 import numpy as np

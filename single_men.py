@@ -1,7 +1,7 @@
 import math
 import copy
 import numpy as np
-import parameters as p
+from parameters import p
 import constant_parameters as c
 import draw_husband
 import draw_wife

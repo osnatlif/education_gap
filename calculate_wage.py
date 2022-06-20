@@ -1,5 +1,5 @@
 import numpy as np
-import parameters as p
+from parameters import p
 from draw_husband import Husband
 from draw_wife import Wife
 import constant_parameters as c

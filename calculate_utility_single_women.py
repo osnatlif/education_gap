@@ -1,6 +1,6 @@
  # from libc.math import pow
 import numpy as np
-import parameters as p
+from parameters import p
 import value_to_index
 import gross_to_net as tax
 import constant_parameters as c

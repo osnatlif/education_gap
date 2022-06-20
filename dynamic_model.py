@@ -1,22 +1,21 @@
 # entry point for the dynamic model estimation
 from time import perf_counter
+import cohorts
 import getopt
 import sys
-import calculate_emax as ce
-import forward_simulation as fs
 
 
 def usage(proc):
     print("usage: " + proc +
           "\n\t-s --static: do not calculate emax" +
           "\n\t-m --moments: display moments" +
-          "\n\t-v --verbose" )
+          "\n\t-c --cohort: cohort. e.g. 1970white" +
+          "\n\t-v --verbose")
     exit(0)
 
-
 def main():
-    options = "hsvma"
-    long_options = ["help", "static", "verbose", "moments"]
+    options = "hsvmc"
+    long_options = ["help", "static", "verbose", "moments", "cohort"]
     display_moments = False
     verbose = False
     static_model = False
@@ -31,10 +30,22 @@ def main():
                 verbose = True
             elif arg in ("-s", "--static"):
                 static_model = True
+            elif arg in ("-c", "--cohort"):
+                if len(values) == 0:
+                    print("'cohort' is a mandatory parameter")
+                    usage(sys.argv[0])
+                cohorts.cohort = values[0]
     except getopt.error as err:
         # output error, and return with an error code
         print(str(err))
         usage(sys.argv[0])
+
+    if cohorts.cohort is None:
+        print("'cohort' is a mandatory parameter")
+        usage(sys.argv[0])
+
+    import calculate_emax as ce
+    import forward_simulation as fs
 
     w_emax = ce.create_married_emax()
     h_emax = ce.create_married_emax()
