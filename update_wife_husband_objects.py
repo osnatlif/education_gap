@@ -24,7 +24,7 @@ def update_wife_single(wife, single_women_index, single_women_ar):
     if single_women_index == 6:   # choose to go to school
         wife.years_of_schooling = wife.years_of_schooling + 1
         school_group = value_to_index.schooly_to_index(wife.years_of_schooling)
-        draw_wife.update_wife_schooling(school_group, wife)
+        draw_wife.update_wife_schooling(wife)
     if single_women_index == 2 or single_women_index == 3:   # choose full time employment
         wife.exp = wife.exp + 1
         wife.emp = 1
