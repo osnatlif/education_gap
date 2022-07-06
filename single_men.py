@@ -75,7 +75,7 @@ def single_men( t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                                          sum += u_husband[married_index]
                                     else:
                                         sum += single_men_value
-                                    print("====================== new draw ======================")
+                                    # print("====================== new draw ======================")
     # end draw backward loop
     h_s_emax[t][school][exp][kids][husband.health][home_time][ability][mother_educ][mother_marital] = sum / c.DRAW_B
     if verbose:

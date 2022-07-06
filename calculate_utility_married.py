@@ -111,12 +111,19 @@ def calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_p
         kids_utility_married_Wep_Hef = 0
         kids_utility_married_Wep_Hep = 0
     # utility from pregnancy when married / utility from pregnancy when SINGLE
-    preg_utility = p.preg_health * wife.health + p.preg_kids * kids_temp + p.preg_t_minus1 * wife.preg + np.random.normal(0, 1) * p.sigma_p
-    # if husband is not married his home time is not influence by a newborn, the wife is influenced of course, so home time for her is not function of M
+    if wife.age < 40:
+        preg_utility = p.preg_health * wife.health + p.preg_kids * kids_temp + p.preg_t_minus1 * wife.preg + np.random.normal(0, 1) * p.sigma_p
+    else:
+        preg_utility = float('-inf')
+        # if husband is not married his home time is not influence by a newborn, the wife is influenced of course, so home time for her is not function of M
     home_time_h = np.exp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h  + np.random.normal(0, 1) * p.sigma_hp_h)
     home_time_w = np.exp(p.tau1_h * np.log(wife.home_time_ar)    + p.tau0_w  + np.random.normal(0, 1) * p.sigma_hp_w)
-    home_time_h_preg = np.exp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h + p.tau2_h + np.random.normal(0, 1) * p.sigma_hp_h)
-    home_time_w_preg = np.exp(p.tau1_h * np.log(wife.home_time_ar) + p.tau0_w + p.tau2_w + np.random.normal(0, 1) * p.sigma_hp_w)
+    if wife.age < 40:
+        home_time_h_preg = np.exp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h + p.tau2_h + np.random.normal(0, 1) * p.sigma_hp_h)
+        home_time_w_preg = np.exp(p.tau1_h * np.log(wife.home_time_ar) + p.tau0_w + p.tau2_w + np.random.normal(0, 1) * p.sigma_hp_w)
+    else:
+        home_time_h_preg = float('-inf')
+        home_time_w_preg = float('-inf')
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     if wife.schooling == husband. schooling:
         marriage_utility = p.taste_c + p.taste_health * (wife.health - husband.health)**2 +                np.random.normal(0, 1) * p.sigma_q  # utility from marriage
@@ -167,10 +174,10 @@ def calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_p
         uc_husband[3] = marriage_utility + (1 / p.alpha0) * (budget_c_married_Wue_Hef**p.alpha0) + marriage_cost_h * (1 - husband.married) + \
             p.alpha3_h_m * kids_utility_married_Wue_Hef + preg_utility
     else:
-        uc_wife[2] = 0
-        uc_wife[3] = 0
-        uc_husband[2] = 0
-        uc_husband[3] = 0
+        uc_wife[2] = float('-inf')
+        uc_wife[3] = float('-inf')
+        uc_husband[2] = float('-inf')
+        uc_husband[3] = float('-inf')
 
     if wage_h_part > 0:
         uc_wife[4] = marriage_utility + (1 / p.alpha0) * (budget_c_married_Wue_Hep**p.alpha0) + marriage_cost_w * (1-wife.married) + \

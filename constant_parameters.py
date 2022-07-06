@@ -2,10 +2,16 @@
 DRAW_B = 1
 DRAW_F = 100
 cohort = 1980
+max_period = 43  # retirement
 men_full_index_array = [2, 3, 8, 9, 14, 15]
 men_part_index_array = [4, 5, 10, 11, 16, 17]
 men_unemployed_index_array = [0, 1, 6, 7, 12, 13]
 pregnancy_index_array = [1, 3, 5, 7, 9, 11, 13, 15, 17]
+single_women_pregnancy_index_array = [1, 3, 5, 8, 10, 12]
+single_women_full_time_index_array = [2, 3, 9, 10]
+single_women_part_time_index_array = [4, 5, 11, 12]
+single_women_welfare_index_array = [7, 8, 9, 10, 11, 12]
+single_women_unemployed_index_array = [0, 1, 7, 8]
 max_school = 14  # 30 - 17
 max_1970 = 36
 NO_KIDS = 0
@@ -13,7 +19,7 @@ beta0 = 0.983  # discount rate
 MINIMUM_UTILITY = float('-inf')
 AGE_VALUES = [18, 18, 20, 22, 25]
 exp_vector = [0, 2, 4, 8, 16]  # experience - 5 point grid
-home_time_vector = [0, 1, 2]
+home_time_vector = [0.5, 1, 1.5]
 ub_h = 1000  # UNEMPLOYMENT BENEFIT HUSBAND
 ub_w = 1000  # UNEMPLOYMENT BENEFIT WIFE
 # work status: (unemp, emp)
@@ -42,7 +48,6 @@ scale = 0.707  # fraction of public consumption
 bp = 0.5       # bargaining power
 GRID = 3
 AGE = 17          # initial age
-max_period = 43  # retirement
 GOOD = 0 # health status
 POOR = 1
 HK1 = 1 # 0 - 2 years of experience
@@ -68,6 +73,9 @@ mother_1990_white    = [19.72,	74.51,	76.81]
 mother_1990_black	   = [56.66,	87.67,	92.24]
 mother_1990_hispanic = [25.16,	90.99,	91.93]
 
+constant_welfare = 4000   # before 97
+by_kids_welfare = 1000    # before 97
+by_income_welfare = -0.1  # before 97
 
 cb_const_60 = 4317.681 # child benefit for single mom + 1 kid - annualy
 cb_per_child_60 = 1517.235

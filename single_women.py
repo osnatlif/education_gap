@@ -62,7 +62,7 @@ def single_women(t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                                     if choose_partner == 1:
                                         wage_h_full, wage_h_part = calculate_wage.calculate_wage_h(husband)
                                         u_husband, u_wife, _, _, _, _ = calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_part, wage_w_full, wife, husband, t)
-                                        single_man_value, single_man_index = calculate_utility_single_man(h_s_emax, wage_h_part, wage_h_full, husband, t)
+                                        single_man_value, _ = calculate_utility_single_man(h_s_emax, wage_h_part, wage_h_full, husband, t)
                                         weighted_utility = float('-inf')
                                         for i in range(0, 18):
                                             if u_wife[i] > single_women_value and u_husband[i] > single_man_value:
@@ -73,7 +73,7 @@ def single_women(t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                                          sum += u_wife[married_index]
                                     else:
                                         sum += single_women_value
-                                    print("====================== new draw ======================")
+                                    # print("====================== new draw ======================")
     # end draw backward loop
     w_s_emax[t][school][exp][kids][wife.health][home_time][ability][mother_educ][mother_marital] = sum / c.DRAW_B
     if verbose:

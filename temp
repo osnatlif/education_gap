@@ -1,0 +1,159 @@
+
+        w_prev_emp_state = wife.get_emp_state()
+        prev_M = M
+        new_born = 0
+        choose_husband = False
+        # draw husband if not already married
+        if M == UNMARRIED:
+          bp = INITIAL_BP
+          duration = 0
+          wife.set_Q(0)
+          # probability of meeting a potential husband
+          choose_husband_p = (math.exp(p.p0_w + p.p1_w * wife.get_AGE() + p.p2_w * pow(wife.get_AGE(), 2)) /
+                              (1.0 + math.exp(p.p0_w + p.p1_w * wife.get_AGE() + p.p2_w * pow(wife.get_AGE(), 2))))
+          if np.random.uniform(0, 1) < choose_husband_p:
+            choose_husband = True
+            husband = draw_husband.draw_husband(t, wife, True)
+            #print(husband)
+            wife.set_Q(np.random.random_integers(0, 2))  # draw wife's match quality
+            assert(husband.get_AGE() == wife.get_AGE())
+            if verbose:
+              print("new potential husband")
+
+        # potential or current husband wage
+        if M == MARRIED or choose_husband:
+          wage_h = calculate_wage.calculate_wage_h(husband, np.random.normal(0, 1))
+        else:
+          wage_h = 0.0
+        wage_w = calculate_wage.calculate_wage_w(wife, np.random.uniform(), np.random.normal(0, 1))
+        is_single_men = False
+        if M == UNMARRIED and choose_husband:          # not married, but has potential husband - calculate initial BP
+          utility = calculate_utility(w_m_emax, h_m_emax, w_s_emax, h_s_emax, n_kids, wage_h, wage_w,
+            True, M, wife, husband, t, bp, is_single_men)
+          # Nash bargaining at first period of marriage
+          bp = nash.nash(utility)
+        if bp != NO_BP:
+          m.bp_initial_dist[int(bp*10)] = m.bp_initial_dist[int(bp*10)] + 1
+        else:
+          choose_husband = False
+
+        if M == MARRIED:
+          if verbose:
+            print("existing husband")
+            print(husband)
+        utility = Utility()
+        if M == MARRIED or choose_husband:
+          # at this point the BP is 0.5 if there is no marriage offer
+          # BP is calculated by nash above if offer given
+          # and is from previous period if already married
+          # utility is calculated again based on the new BP
+          utility = calculate_utility(w_m_emax, h_m_emax, w_s_emax, h_s_emax, n_kids, wage_h, wage_w,
+              True, M, wife, husband, t, bp, is_single_men)
+          M, max_weighted_utility_index, _, _, _ = marriage_emp_decision(utility, bp, wife, husband, adjust_bp)
+        else:   # unmarried and no potential husband
+          # assert(wage_h == 0.0)
+          utility = calculate_utility(w_m_emax, h_m_emax, w_s_emax, h_s_emax, n_kids, wage_h, wage_w,
+              False, M, wife, husband, t, bp, is_single_men)
+          wife.set_emp_state(wife_emp_decision(utility))
+        assert(t+wife.get_age_index() < T_MAX)
+        w_emp_state = wife.get_emp_state()
+        age_index = wife.get_age_index()
+        m.emp_total[t+age_index][school_group] += w_emp_state
+        m.count_emp_total[t + age_index][school_group] += 1
+        if M == MARRIED:
+          m.emp_m[t+age_index][school_group] += w_emp_state
+        if M == UNMARRIED:
+          m.emp_um[t+age_index][school_group] += w_emp_state
+          assert(n_kids>0)
+          assert(n_kids <= c.MAX_NUM_KIDS)
+          kid_age[n_kids-1] = 1
+        elif n_kids > 0:
+          # no newborn, but kids at house, so update ages
+          if kid_age[0] == 18:
+            # oldest kids above 18 leaves the household
+            for order in range(0, c.MAX_NUM_KIDS-1):
+              kid_age[order] = kid_age[order+1]
+            kid_age[c.MAX_NUM_KIDS-1] = 0
+            n_kids = n_kids -1
+            assert(n_kids>=0)
+          for order in range(0, c.MAX_NUM_KIDS):
+            if kid_age[order] > 0:
+              kid_age[order] += 1
+          m.emp_m_kids[n_kids].accumulate(WS, w_emp_state)  # employment married by kids
+          if n_kids == 0:
+            m.emp_um_kids[0].accumulate(WS, w_emp_state) # un/employment unmarried and no children
+          else:
+            m.emp_um_kids[1].accumulate(WS, w_emp_state) # un/employment unmarried and no children
+        # EMPLOYMENT TRANSITION MATRIX
+        if w_emp_state == EMP and w_prev_emp_state == UNEMP:
+          # for transition matrix - unemployment to employment
+          if M == MARRIED:
+            m.just_found_job_m[WS] += 1
+            m.count_just_found_job_m[WS] += 1
+            if n_kids > 0:
+              m.just_found_job_mc[WS] += 1
+              m.count_just_found_job_mc[WS] += 1
+          else:
+            m.just_found_job_um[WS] += 1
+            m.count_just_found_job_um[WS] += 1
+        elif w_emp_state == UNEMP and w_prev_emp_state == EMP:
+          # for transition matrix - employment to unemployment
+          if M == MARRIED:
+            m.just_got_fired_m[WS] += 1
+            if n_kids > 0:
+              m.just_got_fired_mc[WS] += 1
+          else:
+            m.just_got_fired_um[WS] += 1
+        elif w_emp_state == UNEMP and w_prev_emp_state == UNEMP:
+          # no change employment
+          if M == MARRIED:
+            m.count_just_found_job_m[WS] += 1
+            if n_kids > 0:
+              m.count_just_found_job_mc[WS] += 1
+          else:
+            m.count_just_found_job_um[WS] += 1
+        elif w_emp_state == EMP and w_prev_emp_state == EMP:
+          # no change unemployment
+          if M == MARRIED:
+            m.count_just_got_fired_m[WS] += 1
+            if n_kids > 0:
+              m.count_just_got_fired_mc[WS] += 1
+          else:
+            m.count_just_got_fired_um[WS] += 1
+
+        # women wages if employed by experience
+        if w_emp_state == EMP and wage_w > 0.0:
+          m.wages_w.accumulate(wage_w, wife.get_WE(), school_group)
+        w_age_index = wife.get_age_index()
+        m.married[t+w_age_index][school_group] += M
+
+        # FERTILITY AND MARRIED RATE MOMENTS
+        m.newborn_all.accumulate(t+w_age_index, WS, new_born)
+        if M == MARRIED:
+          m.newborn_m.accumulate(t+w_age_index, WS, new_born)
+        else:
+          m.newborn_um.accumulate(t+w_age_index, WS, new_born)
+        if wife.get_AGE() == MAX_FERTILITY_AGE - 4:
+          m.n_kids_arr.accumulate(WS, n_kids) # # of children by school group
+          #m.up_down_moments.accumulate(UpDownMomentsType.n_kids_m_arr, WS, n_kids_m)
+          #m.up_down_moments.accumulate(UpDownMomentsType.n_kids_um_arr, WS, n_kids_um)
+        # marriage transition matrix
+        if M == MARRIED and prev_M == UNMARRIED:
+        elif M == UNMARRIED and prev_M == UNMARRIED:
+          # still unmarried
+          if verbose:
+            print("still divorced / single")
+          m.count_just_divorced[school_group] += 1
+
+        m.divorce[t+w_age_index][school_group] += DIVORCE
+        wife.increase_AGE()
+        husband.increase_AGE()
+
+  estimated_moments = calculate_moments(m, display_moments)
+
+  # objective function calculation:
+  # (1) calculate MSE for each moment that has a time dimension and normalize by its standard deviation
+  #     note that the first column of the moments (index) is skipped
+  # (2) for general moments, each one is normalized by its standard deviation
+  # (3) the value of the objective function is the sum of all the values in (1) and (2)
+  return 0.0

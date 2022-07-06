@@ -31,9 +31,9 @@ def married_couple_emax(t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                     husband.exp = c.exp_vector[exp_h]
                     for kids in range(0, 4):                # for each number of kids: 0, 1, 2,  - open loop of kids
                         wife.kids = kids
-                        for home_time_w in range(0, 3):       # home time loop - three options
+                        for home_time_w in range(0,1):   # range(0, 3):       # home time loop - three options
                             wife.home_time_ar = c.home_time_vector[home_time_w]
-                            for home_time_h in range(0, 3):
+                            for home_time_h in range(0,1):   # range(0, 3):
                                 husband.home_time_ar = c.home_time_vector[home_time_h]
                                 for ability_w in range(0, 3):     # for each ability level: low, medium, high - open loop of ability
                                     wife.ability_i = ability_w
@@ -41,13 +41,13 @@ def married_couple_emax(t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                                     for ability_h in range(0, 3):
                                         husband.ability_i = ability_h
                                         husband.ability_value = c.normal_vector[ability_h] * p.sigma_ability_h  # wife ability - low, medium, high
-                                        for mother_educ_w in range(0, 2):
+                                        for mother_educ_w in range(0, 1): #range(0, 2)
                                             wife.mother_educ = mother_educ_w
-                                            for mother_educ_h in range(0, 2):
+                                            for mother_educ_h in range(0, 1): #range(0, 2)
                                                 husband.mother_educ = mother_educ_h
-                                                for mother_marital_w in range(0, 2):
+                                                for mother_marital_w in range(0, 1): #range(0, 2)
                                                     wife.mother_marital = mother_marital_w
-                                                    for mother_marital_h in range(0, 2):
+                                                    for mother_marital_h in range(0, 1): #range(0, 2)
                                                         husband.mother_marital = mother_marital_h
                                                         w_sum = 0
                                                         h_sum = 0
@@ -73,7 +73,7 @@ def married_couple_emax(t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                                                             else:
                                                                 w_sum += single_women_value
                                                                 h_sum += single_man_value
-                                                            print("====================== new draw ======================")
+                                                            # print("====================== new draw ======================")
     # end draw backward loop
     w_emax[t][school_w][school_h][exp_w][exp_h][kids][wife.health][husband.health][home_time_w][home_time_h][ability_w] \
         [ability_h][mother_educ_w][mother_educ_h][mother_marital_w][mother_marital_h] = w_sum / c.DRAW_B

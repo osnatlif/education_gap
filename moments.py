@@ -30,7 +30,10 @@ class Moments:
   divorce_moments = np.zeros((c.max_period))
   assortative_moments = np.zeros((c.school_size, c.school_size))
   assortative_counter = np.zeros(1)
-
+  welfare_moments_employed = np.zeros(c.max_period)
+  welfare_counter_employed = np.zeros(c.max_period)
+  welfare_moments_unemployed = np.zeros(c.max_period)
+  welfare_counter_unemployed = np.zeros(c.max_period)
 
 def calculate_moments(m, display_moments):
   # calculate employment moments
@@ -51,8 +54,11 @@ def calculate_moments(m, display_moments):
   ##################################################################################################
   estimated_single_moments_w = np.c_[age_arr, (m.fertility_moments_single.T /(c.DRAW_F - m.marriage_moments)).T,
                                       m.wage_moments_wife_single / m.wage_counter_wife_single,
-                                      (m.emp_moments_wife_single.T / (c.DRAW_F - m.marriage_moments)).T]
+                                      (m.emp_moments_wife_single.T / (c.DRAW_F - m.marriage_moments)).T,
+                                      m.welfare_moments_employed / m.welfare_counter_employed,
+                                      m.welfare_moments_unemployed / m.welfare_counter_unemployed]
 
+  headers = ["Age", "No Kids", "1 Kid", "2 Kids", "3+ Kids", "Wage", "unemployment", "full", "part", "welfare-employed", "welfare-unemployed"]
   table = tabulate(estimated_single_moments_w, headers, floatfmt=".2f", tablefmt="simple")
   print(" single women moments")
   print(table)

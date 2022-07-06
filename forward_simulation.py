@@ -69,12 +69,12 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
       for t in range(0, c.max_period):
         if verbose:
           print("========= ", wife.age, " =========")
-        [wage_w_full, wage_w_part] = calculate_wage.calculate_wage_w(wife)
+        wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
         if verbose:
           print("women's wage full and part")
           print(wage_w_full)
           print(wage_w_part)
-        [single_women_value, single_women_index, single_women_ar] = calculate_utility_single_women.calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
+        single_women_value, single_women_index, single_women_ar = calculate_utility_single_women.calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
         if verbose:
           print("utility of single women - value and index")
           print(single_women_value)
@@ -96,13 +96,13 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
               print(husband)
 
         if wife.married == 1 or choose_partner == 1:
-          [wage_h_full, wage_h_part] = calculate_wage.calculate_wage_h(husband)
+          wage_h_full, wage_h_part = calculate_wage.calculate_wage_h(husband)
           if verbose:
             print("men's wage full and part")
             print(wage_h_full)
             print(wage_h_part)
-          [u_husband, u_wife, home_time_h, home_time_w, home_time_h_preg, home_time_w_preg] = calculate_utility_married.calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_part, wage_w_full, wife, husband, t)
-          [single_man_value, single_man_index] = calculate_utility_single_man.calculate_utility_single_man(h_s_emax, wage_h_part, wage_h_full, husband, t)
+          u_husband, u_wife, home_time_h, home_time_w, home_time_h_preg, home_time_w_preg = calculate_utility_married.calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_part, wage_w_full, wife, husband, t)
+          single_man_value, single_man_index = calculate_utility_single_man.calculate_utility_single_man(h_s_emax, wage_h_part, wage_h_full, husband, t)
           if verbose:
             print("utility of single men - value and index")
             print(single_man_value)
@@ -163,16 +163,26 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
           elif wife.capacity == 1:
             temp = 2
           m.emp_moments_wife_single[t, temp] += 1  # 0 - unemployed, 1 - part time, 2 - full time
-          if single_women_index == 2 or single_women_index == 3:  # choose full time employment
+          if single_women_index in c.single_women_full_time_index_array:  # choose full time employment
             m.wage_moments_wife_single[t] += wage_w_full
             m.wage_counter_wife_single[t] += 1
-          elif single_women_index == 4 or single_women_index == 5:  # choose part-time employment
+            m.welfare_moments_employed[t] += wife.on_welfare
+            m.welfare_counter_employed[t] += 1
+          elif single_women_index in c.single_women_part_time_index_array:  # choose part-time employment
             m.wage_moments_wife_single[t] += (wage_w_part * 2)
             m.wage_counter_wife_single[t] += 1
+            m.welfare_moments_employed[t] += wife.on_welfare
+            m.welfare_counter_employed[t] += 1
+          if single_women_index in c.single_women_unemployed_index_array:   # choose welfare and unemployment
+            m.welfare_moments_unemployed[t] += wife.on_welfare
+            m.welfare_counter_unemployed[t] += 1
+
         if wife.age < 31:
           m.school_moments_wife[t, wife.schooling] += 1
         m.marriage_moments[t] += wife.married
         m.divorce_moments[t] += wife.divorce
-
+        # print(wife)
+        # print(single_women_index)
+        # print(married_index)
   estimated_moments = calculate_moments(m, display_moments)
   return 0.0

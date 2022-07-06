@@ -98,18 +98,19 @@ taste_w_up = -1.894  	 # taste for marriage	schooling gap - men more educated
 taste_w_down = -2.227	 # taste for marriage	schooling gap - women more educated
 taste_health = 0         # taste for marriage	health gap
 preg_health = 0.0002     # utility from pregnancy - health
-preg_married = 0.429	   # utility from pregnancy -	married
-preg_t_minus1 = -10.227   # utility from pregnancy - pregnancy in t-1
-preg_kids = -3.98       # utility from pregnancy - number of kide
+preg_unmarried = -22.429	   # utility from pregnancy -	married
+preg_t_minus1 = -19.227   # utility from pregnancy - pregnancy in t-1
+preg_kids = -13.98       # utility from pregnancy - number of kide
 # utility from quality and quantity of children
 row0 = -0.869	        # utility from quality and quantity of children	CES function's parameter
 row1_w = 0.413	        # utility from quality and quantity of children	wife leisure
 row1_h = 0.350	        # utility from quality and quantity of children	husband leisure
 row2 = 0.003	          # utility from quality and quantity of children	spending per child
+# welfare parameters
 stigma = -44.742	      # disutility from welfare
 stigma96 = -61.543	    # disutility from welfare after 1996
-p_alimony = -0.483	    # prob of having alimony for single mothers
-alimony = 8.689	        # mean of alimony	exp of draw from normal distribution
+p_alimony = np.exp(-0.483)/(1+np.exp(-0.483))	    # prob of having alimony for single mothers)
+alimony = np.exp(8.689)	        # mean of alimony	exp of draw from normal distribution
 # utility parameters
 alpha0 = 0.462	       # utility parameters 	CRRA consumption parameter
 alpha11_w = 0.492	     # utility parameters - wife	leisure when pregnant
@@ -127,8 +128,8 @@ mc = -1.946	             # fixed cost of getting married
 mc_by_parents = -12.691	 # cost of marriage by parents marital status
 dc_w = -10.579	           # fixed cost of divorce wife	alpha4
 dc_h = -10.691	           # fixed cost of divorce husband	alpha4
-dc_w_kids = -10.372	     # fixed cost of divorce child wife	alpha4
-dc_h_kids = -10.260	     # fixed cost of divorce child husband	alpha4
+dc_w_kids = -100.372	     # fixed cost of divorce child wife	alpha4
+dc_h_kids = -100.260	     # fixed cost of divorce child husband	alpha4
 tau0_w = 0.0	 # Home Time Equation - wife	constant
 tau1_w = 0.842	 # home time equation - wife	ar coefficient
 tau2_w = 1.493	 # home time equation - wife	pregnancy in previous period

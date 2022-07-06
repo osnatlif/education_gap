@@ -31,12 +31,18 @@ class Wife:
     self.mother_educ = 0
     self.mother_marital = 0
     self.mother_immig = 0
-
+    self.on_welfare = 0
+    self.welfare_periods = 0
+    self.age_first_child = 0
+    self.age_second_child = 0
+    self.age_third_child = 0
   def __str__(self):
     return "Wife\n\tSchooling: " + str(self.schooling) + "\n\tSchooling Map: " + str(self.hsd) + "," + str(self.hsg) + \
            "," + str(self.sc) + "," + str(self.cg) + "," + str(self.pc) + \
            "\n\tExperience: " + str(self.exp) + "\n\tAbility: " + str(self.ability_i) + "," + str(self.ability_value) + \
-           "\n\tAge: " + str(self.age)  + "\n\tKids: " + str(self.kids)+ "\n\tHealth: " + str(self.health)+ \
+           "\n\tAge: " + str(self.age)  + "\n\tKids: " + str(self.kids)+ "\n\tage first kid: " + str(self.age_first_child) + \
+           "\n\tage second child: " + str(self.age_second_child) + "\n\tage third child: " + str(self.age_third_child) + \
+           "\n\tHealth: " + str(self.health)+ \
            "\n\tPregnant: " + str(self.preg) +"\n\tmother education: " + str(self.mother_educ) +"\n\tmother marital: " + str(self.mother_marital)
 
 
