@@ -2,16 +2,40 @@ import math
 import copy
 import numpy as np
 from parameters import p
-import constant_parameters as c
-import draw_husband
-import draw_wife
-import calculate_wage
-from calculate_utility_single_women import calculate_utility_single_women
-from calculate_utility_married import calculate_utility_married
-from calculate_utility_single_man import calculate_utility_single_man
+cimport constant_parameters as c
+cimport draw_husband
+cimport draw_wife
+cimport calculate_wage
+from calculate_utility_single_women cimport calculate_utility_single_women
+from calculate_utility_married cimport calculate_utility_married
+from calculate_utility_single_man cimport calculate_utility_single_man
 
 
-def single_men( t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
+cdef int single_men(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :, :] w_emax,
+    double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :, :] h_emax,
+    double[:,:,:,:,:,:,:,:,:] w_s_emax,
+    double[:,:,:,:,:,:,:,:,:] h_s_emax, verbose) except -1:
+    cdef double[:] mother
+    cdef int iter_count = 0
+    cdef double sum_emax = 0
+    cdef int married_index = -99
+    cdef int choose_partner = 0
+    cdef int school
+    cdef int exp
+    cdef int kids
+    cdef int home_time
+    cdef int ability
+    cdef int mother_educ
+    cdef int mother_marital
+    cdef int draw
+    cdef double wage_w_full
+    cdef double wage_w_part
+    cdef double wage_h_full
+    cdef double wage_h_part
+    cdef double single_women_value
+    cdef double single_man_value
+    cdef double[:] u_wife = np.empty(18)
+    cdef double[:] u_husband = np.empty(18)
     if c.cohort == 1960:
         mother = c.mother_1960_white
     elif c.cohort == 1970:
@@ -25,8 +49,8 @@ def single_men( t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
 
     if verbose:
         print("====================== single men:  ======================")
-    husband = draw_husband.Husband()
-    iter_count = 0
+    cdef draw_husband.Husband husband = draw_husband.Husband()
+    cdef draw_wife.Wife wife = draw_wife.Wife()
     husband.age = 17 + t
     # c.max_period, c.school_size, c.exp_size, c.kids_size, c.health_size, c.home_time_size, c.ability_size, c.mother_size, c.mother_size])
     for school in range(0, c.school_size):   # loop over school
@@ -45,13 +69,14 @@ def single_men( t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                             husband.mother_educ = mother_educ
                             for mother_marital in range(0, 2):
                                 husband.mother_marital = mother_marital
-                                sum = 0
+                                sum_emax = 0
+                                iter_count = iter_count + 1
                                 if verbose:
-                                   print(husband)
+                                    print(husband)
                                 for draw in range(0, c.DRAW_B):
                                     married_index = -99
                                     choose_partner = 0
-                                    wage_h_full, wage_h_part = calculate_wage.calculate_wage_w(husband)
+                                    wage_h_full, wage_h_part = calculate_wage.calculate_wage_h(husband)
                                     single_men_value, _ = calculate_utility_single_man(h_s_emax, wage_h_part, wage_h_full, husband, t)
                                     if husband.age < 20:
                                         prob_meet_potential_partner = np.exp(p.omega_1) / (1.0 + np.exp(p.omega_1))
@@ -60,9 +85,9 @@ def single_men( t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                                         prob_meet_potential_partner = np.exp(temp) / (1.0 + np.exp(temp))
                                     if np.random.normal() < prob_meet_potential_partner:
                                         choose_partner = 1
-                                        wife = draw_wife.draw_wife(husband, mother)
+                                        wife = draw_wife.draw_wife(husband, mother[0], mother[1], mother[2])
                                     if choose_partner == 1:
-                                        wage_w_full, wage_w_part = calculate_wage.calculate_wage_h(wife)
+                                        wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
                                         u_husband, u_wife, _, _, _, _ = calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_part, wage_w_full, wife, husband, t)
                                         single_women_value, _, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
                                         weighted_utility = float('-inf')
@@ -72,14 +97,14 @@ def single_men( t, w_emax, h_emax, w_s_emax, h_s_emax,  verbose):
                                                     weighted_utility = c.bp * u_wife[i] + (1 - c.bp) * u_husband[i]
                                                     married_index = i
                                     if married_index > -99:
-                                         sum += u_husband[married_index]
+                                        sum_emax += u_husband[married_index]
                                     else:
-                                        sum += single_men_value
+                                        sum_emax += single_men_value
                                     # print("====================== new draw ======================")
     # end draw backward loop
-    h_s_emax[t][school][exp][kids][husband.health][home_time][ability][mother_educ][mother_marital] = sum / c.DRAW_B
+    h_s_emax[t][school][exp][kids][husband.health][home_time][ability][mother_educ][mother_marital] = sum_emax / c.DRAW_B
     if verbose:
-        print("emax(", t, ", ", school, ", ", exp,", ", kids, ",", ability, ")=", sum / c.DRAW_B)
+        print("emax(", t, ", ", school, ", ", exp,", ", kids, ",", ability, ")=", sum_emax / c.DRAW_B)
         print("======================================================")
-    iter_count = iter_count + 1
+
     return iter_count

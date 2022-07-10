@@ -4,7 +4,6 @@ import cohorts
 import getopt
 import sys
 
-
 def usage(proc):
     print("usage: " + proc +
           "\n\t-s --static: do not calculate emax" +
@@ -12,6 +11,7 @@ def usage(proc):
           "\n\t-c --cohort: cohort. e.g. 1970white" +
           "\n\t-v --verbose")
     exit(0)
+
 
 def main():
     options = "hsvmc"
@@ -44,16 +44,20 @@ def main():
         print("'cohort' is a mandatory parameter")
         usage(sys.argv[0])
 
-    import calculate_emax as ce
+    # these imports mus tbe done *after* the cohorts global parameter is set
+    from calculate_emax import create_married_emax
+    from calculate_emax import create_single_w_emax
+    from calculate_emax import create_single_h_emax
+    from calculate_emax import calculate_emax
     import forward_simulation as fs
 
-    w_emax = ce.create_married_emax()
-    h_emax = ce.create_married_emax()
-    w_s_emax = ce.create_single_w_emax()
-    h_s_emax = ce.create_single_h_emax()
+    w_emax = create_married_emax()
+    h_emax = create_married_emax()
+    w_s_emax = create_single_w_emax()
+    h_s_emax = create_single_h_emax()
     if not static_model:
         tic = perf_counter()
-        iter_count = ce.calculate_emax(w_emax, h_emax, w_s_emax, h_s_emax, verbose)
+        iter_count = calculate_emax(w_emax, h_emax, w_s_emax, h_s_emax, verbose)
         toc = perf_counter()
         print("calculate emax with %d iterations took: %.4f (sec)" % (iter_count, (toc - tic)))
     else:

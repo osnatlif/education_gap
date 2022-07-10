@@ -1,3 +1,6 @@
 .idea
 *.pyc
 *.cpp
+*.o
+*.so
+*.c

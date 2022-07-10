@@ -1,13 +1,53 @@
  # from libc.math import pow
 import numpy as np
 from parameters import p
-import value_to_index
-import gross_to_net as tax
-import constant_parameters as c
-from draw_wife import Wife
+cimport value_to_index
+cimport gross_to_net as tax
+cimport constant_parameters as c
+from draw_wife cimport Wife
 
 
-def calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t):
+cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
+    double wage_w_part, double wage_w_full,Wife wife,int t):
+    cdef double cb_const = 0
+    cdef double cb_per_child = 0
+    cdef double welfare_stigma_cost = 0
+    cdef double alimony_sum = 0
+    cdef double net_income_single_w_ue = 0
+    cdef double net_income_single_w_ue_welfare = 0
+    cdef double net_income_single_w_ef =0
+    cdef double net_income_single_w_ef_welfare= 0
+    cdef double net_income_single_w_ep = 0
+    cdef double net_income_single_w_ep_welfare = 0
+    cdef double welfare = 0
+    cdef double etaw = 0
+    cdef double budget_c_single_w_ue = 0
+    cdef double budget_c_single_w_ue_welfare = 0
+    cdef double budget_c_single_w_ef = 0
+    cdef double budget_c_single_w_ef_welfare = 0
+    cdef double budget_c_single_w_ep = 0
+    cdef double budget_c_single_w_ep_welfare = 0
+    cdef double kids_utility_single_w_ue = 0
+    cdef double kids_utility_single_w_ue_welfare = 0
+    cdef double kids_utility_single_w_ef = 0
+    cdef double kids_utility_single_w_ef_welfare = 0
+    cdef double kids_utility_single_w_ep = 0
+    cdef double kids_utility_single_w_ep_welfare = 0
+    cdef double preg_utility_um = 0
+    cdef double school_utility_w = 0
+    cdef double home_time_w = 0
+    cdef double home_time_w_preg = 0
+    cdef double divorce_cost_w = 0
+    cdef double[13] u_wife_single
+    cdef double[13] u_wife
+    cdef int kids_index = 0
+    cdef int wife_exp_index = 0
+    cdef int wife_home_time_index = 0
+    cdef int wife_home_time_index_preg = 0
+    cdef int school_index = 0
+    cdef double single_value = 0
+    cdef int single_index = 0
+    cdef double ar = 0
     # get specific cohort data
     if c.cohort == 1960:
         cb_const = c.cb_const_60
@@ -38,7 +78,7 @@ def calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t):
     #      calculate utility for single women
     ###################################################################################################
     alimony_sum = 0
-    if wife.divorce == 1 and wife.kids > 0 and np.random.uniform(1, 1) < p.p_alimony:
+    if wife.get_divorce() == 1 and wife.kids > 0 and np.random.uniform(1, 1) < p.p_alimony:
         alimony_sum = p.alimony
 
     if wife.kids == 0:
@@ -95,6 +135,9 @@ def calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t):
         kids_utility_single_w_ue = 0
         kids_utility_single_w_ef = 0
         kids_utility_single_w_ep = 0
+        kids_utility_single_w_ue_welfare = 0
+        kids_utility_single_w_ef_welfare = 0
+        kids_utility_single_w_ep_welfare = 0
     else:
         assert(0)
     if wife.age < 40:
@@ -119,14 +162,14 @@ def calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t):
     # utility from each option:
     # single options:
     #            0-single + unemployed + non-pregnant
-    #		         1-single + unemployed + pregnant - zero for men
+    #                    1-single + unemployed + pregnant - zero for men
     #            2-single + employed full  + non-pregnant
     #            3-single + employed full  + pregnant   - zero for men
     #            4-single + employed part + non-pregnant
     #            5-single + employed part + pregnant   - zero for men
     #            6-schooling: single + unemployed + non-pregnant + no children
     #            7-single + unemployed + non-pregnant + welfare
-    #		         8-single + unemployed + pregnant + welfare - zero for men
+    #                    8-single + unemployed + pregnant + welfare - zero for men
     #            9-single + employed full  + non-pregnant + welfare
     #            10-single + employed full  + pregnant + welfare  - zero for men
     #            11 -single + employed part + non-pregnant + welfare
@@ -322,11 +365,10 @@ def calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t):
     # print(single_max_option)
     # print(single_max_option_index)
     # print(u_wife)
-    if single_index in c.single_women_pregnancy_index_array:
+    # single_women_pregnancy_index_array = [1, 3, 5, 8, 10, 12]
+    if single_index==1 or single_index==3 or single_index==5 or single_index==8 or single_index==10 or single_index==12:
         ar = home_time_w_preg
     else:
         ar = home_time_w
 
     return single_value, single_index, ar
-
-
