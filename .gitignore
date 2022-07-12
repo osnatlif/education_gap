@@ -4,3 +4,8 @@
 *.o
 *.so
 *.c
+*.pyd
+*.exp
+*.obj
+*.lib
+cython_debug

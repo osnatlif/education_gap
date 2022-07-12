@@ -7,6 +7,7 @@ cimport gross_to_net as tax
 cimport constant_parameters_py as c
 from draw_husband cimport Husband
 from draw_wife cimport Wife
+from libc.math cimport exp as cexp
 
 
 cpdef tuple calculate_utility_married(double[:,:,:,:,:,:,:,:,:, :, :, :, :, :, :, :] w_emax,
@@ -171,11 +172,11 @@ cpdef tuple calculate_utility_married(double[:,:,:,:,:,:,:,:,:, :, :, :, :, :, :
     else:
         preg_utility = float('-inf')
         # if husband is not married his home time is not influence by a newborn, the wife is influenced of course, so home time for her is not function of M
-    home_time_h = np.exp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h  + np.random.normal(0, 1) * p.sigma_hp_h)
-    home_time_w = np.exp(p.tau1_h * np.log(wife.home_time_ar)    + p.tau0_w  + np.random.normal(0, 1) * p.sigma_hp_w)
+    home_time_h = cexp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h  + np.random.normal(0, 1) * p.sigma_hp_h)
+    home_time_w = cexp(p.tau1_h * np.log(wife.home_time_ar)    + p.tau0_w  + np.random.normal(0, 1) * p.sigma_hp_w)
     if wife.age < 40:
-        home_time_h_preg = np.exp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h + p.tau2_h + np.random.normal(0, 1) * p.sigma_hp_h)
-        home_time_w_preg = np.exp(p.tau1_h * np.log(wife.home_time_ar) + p.tau0_w + p.tau2_w + np.random.normal(0, 1) * p.sigma_hp_w)
+        home_time_h_preg = cexp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h + p.tau2_h + np.random.normal(0, 1) * p.sigma_hp_h)
+        home_time_w_preg = cexp(p.tau1_h * np.log(wife.home_time_ar) + p.tau0_w + p.tau2_w + np.random.normal(0, 1) * p.sigma_hp_w)
     else:
         home_time_h_preg = float('-inf')
         home_time_w_preg = float('-inf')

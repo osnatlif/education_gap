@@ -3,9 +3,13 @@
 cpdef int home_time_to_index(double home_time):
     if home_time < 0:
         return 0
-    elif home_time > 0:
-        return 2
-    else:
+    elif home_time >= 0:
+        return 1
+
+cpdef int ability_to_index(int ability):
+    if ability <= 0:
+        return 0
+    elif ability > 0:
         return 1
 
 cpdef int exp_to_index(double exp):   # levels grid: 0, 1-2, 3-4, 5-10, 11+

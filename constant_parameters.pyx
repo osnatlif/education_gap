@@ -1,7 +1,7 @@
 # number of draws
 cdef int DRAW_B = 1
 DRAW_F = 100
-cdef int cohort = 1980
+cdef int cohort = 1970
 cdef int max_period = 43  # retirement
 men_full_index_array = [2, 3, 8, 9, 14, 15]
 men_part_index_array = [4, 5, 10, 11, 16, 17]
@@ -19,14 +19,17 @@ cdef double beta0 = 0.983  # discount rate
 cdef double MINIMUM_UTILITY = float('-inf')
 cdef int[:] AGE_VALUES = [18, 18, 20, 22, 25]
 cdef int[:] exp_vector = [0, 2, 4, 8, 16]  # experience - 5 point grid
-cdef double[:] home_time_vector = [0.5, 1, 1.5]
+#cdef double[:] home_time_vector = [0.5, 1, 1.5]
+cdef double[:] home_time_vector = [0.5, 1.5]
 cdef int ub_h = 1000  # UNEMPLOYMENT BENEFIT HUSBAND
 cdef int ub_w = 1000  # UNEMPLOYMENT BENEFIT WIFE
 # work status: (unemp, emp)
 cdef int UNEMP = 0
 cdef int EMP = 1
 # ability wife/husband: (low, medium, high)) + match quality: (high, medium, low)
-cdef double[:] normal_vector = [-1.150, 0.0, 1.150]
+# cdef double[:] normal_vector = [-1.150, 0.0, 1.150]
+cdef double[:] normal_vector = [-1.150,  1.150]
+
 # marital status: (unmarried, married)
 cdef int UNMARRIED = 0
 cdef int MARRIED = 1
@@ -34,10 +37,12 @@ cdef int MARRIED = 1
 cdef int school_size = 5
 cdef int exp_size = 5
 cdef int kids_size = 4    # number of children: (0, 1, 2, 3+)
-cdef int ability_size = 3
-cdef int home_time_size = 3
-cdef int mother_size = 2
-cdef int health_size = 2
+cdef int ability_size = 2 #3
+cdef int home_time_size = 2 #3
+cdef int mother_size = 1 #2
+cdef int health_size = 1 # 2
+cdef int mother_educ = 0
+cdef int mother_marital = 0
 # maximum fertility age
 cdef int MAX_FERTILITY_AGE = 40
 cdef double eta1 = 0.194   # fraction from parents net income  that one kid get
@@ -67,10 +72,10 @@ cdef double[:] mother_1970_white           = [11.28,    82.16,  83.48]
 cdef double[:] mother_1970_black    = [45.26,   87.75,  90.52]
 cdef double[:] mother_1970_hispanic = [21.76,   95.30,  96.3]
 cdef double[:] mother_1980_white    = [16.24,   81.74,  83.12]
-cdef double[:] mother_1980_black           = [57.42,    92.58,  95.31]
+cdef double[:] mother_1980_black    = [57.42,    92.58,  95.31]
 cdef double[:] mother_1980_hispanic = [24.22,   93.06,  93.77]
 cdef double[:] mother_1990_white    = [19.72,   74.51,  76.81]
-cdef double[:] mother_1990_black           = [56.66,    87.67,  92.24]
+cdef double[:] mother_1990_black    = [56.66,    87.67,  92.24]
 cdef double[:] mother_1990_hispanic = [25.16,   90.99,  91.93]
 
 cdef int constant_welfare = 4000   # before 97

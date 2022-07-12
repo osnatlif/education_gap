@@ -26,21 +26,21 @@ cpdef int calculate_emax(double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :, :] 
     cdef double tic
     cdef double toc
     # running until the one before last period
-    for t in range(c.max_period - 2, 0, -1):
+    for t in range(c.max_period - 1, 0, -1):
         # EMAX FOR SINGLE MEN
         tic = perf_counter()
         iter_count += single_men(t, w_emax, h_emax, w_s_emax, h_s_emax, verbose)
-        toc = perf_counter()
+        #toc = perf_counter()
         #print("calculate single men for t=%d took: %.4f (sec)" % (t, (toc - tic)))
         # EMAX FOR SINGLE WOMEN
-        tic = perf_counter()
+        #tic = perf_counter()
         iter_count += single_women(t, w_emax, h_emax, w_s_emax, h_s_emax, verbose)
-        toc = perf_counter()
+        #toc = perf_counter()
         #print("calculate single women for t=%d took: %.4f (sec)" % (t, (toc - tic)))
         # EMAX FOR MARRIED COUPLE
-        tic = perf_counter()
+        #tic = perf_counter()
         iter_count += married_couple_emax(t, w_emax, h_emax, w_s_emax, h_s_emax, verbose)
         toc = perf_counter()
-        #print("calculate married couple for t=%d took: %.4f (sec)" % (t, (toc - tic)))
+        print("calculate emax for t=%d took: %.4f (sec)" % (t, (toc - tic)))
 
     return iter_count

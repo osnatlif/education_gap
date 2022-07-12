@@ -4,6 +4,7 @@ cimport constant_parameters as c
 cimport draw_husband
 cimport draw_wife
 cimport calculate_wage
+from libc.math cimport exp as cexp
 from calculate_utility_single_women cimport calculate_utility_single_women
 from calculate_utility_married cimport calculate_utility_married
 from calculate_utility_single_man cimport calculate_utility_single_man
@@ -58,14 +59,14 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
             wife.exp = c.exp_vector[exp]
             for kids in range(0, 4):                # for each number of kids: 0, 1, 2,  - open loop of kids
                 wife.kids = kids
-                for home_time in range(0, 3):       # home time loop - three options
+                for home_time in range(0, c.home_time_size):       # home time loop - three options
                     wife.home_time_ar = c.home_time_vector[home_time]
-                    for ability in range(0, 3):     # for each ability level: low, medium, high - open loop of ability
+                    for ability in range(0, c.ability_size):     # for each ability level: low, medium, high - open loop of ability
                         wife.ability_i = ability
                         wife.ability_value = c.normal_vector[ability] * p.sigma_ability_w  # wife ability - low, medium, high
-                        for mother_educ in range(0,2):
+                        for mother_educ in range(0,c.mother_size):
                             wife.mother_educ = mother_educ
-                            for mother_marital in range(0, 2):
+                            for mother_marital in range(0, c.mother_size):
                                 wife.mother_marital = mother_marital
                                 sum_emax = 0
                                 iter_count = iter_count + 1
@@ -77,10 +78,10 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                     wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
                                     single_women_value, _, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
                                     if wife.age < 20:
-                                        prob_meet_potential_partner = np.exp(p.omega_1) / (1.0 + np.exp(p.omega_1))
+                                        prob_meet_potential_partner = cexp(p.omega_1) / (1.0 + cexp(p.omega_1))
                                     else:
                                         temp = p.omega3 + p.omega4_w * wife.age + p.omega5_w * wife.age * wife.age
-                                        prob_meet_potential_partner = np.exp(temp) / (1.0 + np.exp(temp))
+                                        prob_meet_potential_partner = cexp(temp) / (1.0 + cexp(temp))
                                     if np.random.normal() < prob_meet_potential_partner:
                                         choose_partner = 1
                                         husband = draw_husband.draw_husband_forward(wife, mother[1], mother[2], mother[3])
@@ -99,10 +100,10 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                     else:
                                         sum_emax += single_women_value
                                     # print("====================== new draw ======================")
-    # end draw backward loop
-    w_s_emax[t][school][exp][kids][wife.health][home_time][ability][mother_educ][mother_marital] = sum_emax / c.DRAW_B
-    if verbose:
-        print("emax(", t, ", ", school, ", ", exp,", ", kids, ",", ability, ")=", sum_emax / c.DRAW_B)
-        print("======================================================")
+                                # end draw backward loop
+                                w_s_emax[t][school][exp][kids][wife.health][home_time][ability][mother_educ][mother_marital] = sum_emax / c.DRAW_B
+                                if verbose:
+                                    print("emax(", t, ", ", school, ", ", exp,", ", kids, ",", ability, ")=", sum_emax / c.DRAW_B)
+                                    print("======================================================")
 
     return iter_count

@@ -66,23 +66,23 @@ cpdef int married_couple_emax(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, 
                     husband.exp = c.exp_vector[exp_h]
                     for kids in range(0, 4):                # for each number of kids: 0, 1, 2,  - open loop of kids
                         wife.kids = kids
-                        for home_time_w in range(0,1):   # range(0, 3):       # home time loop - three options
+                        for home_time_w in range(0,c.home_time_size):   # range(0, 3):       # home time loop - three options
                             wife.home_time_ar = c.home_time_vector[home_time_w]
-                            for home_time_h in range(0,1):   # range(0, 3):
+                            for home_time_h in range(0,c.home_time_size):   # range(0, 3):
                                 husband.home_time_ar = c.home_time_vector[home_time_h]
-                                for ability_w in range(0, 3):     # for each ability level: low, medium, high - open loop of ability
+                                for ability_w in range(0, c.ability_size):     # for each ability level: low, medium, high - open loop of ability
                                     wife.ability_i = ability_w
                                     wife.ability_value = c.normal_vector[ability_w] * p.sigma_ability_w  # wife ability - low, medium, high
-                                    for ability_h in range(0, 3):
+                                    for ability_h in range(0, c.ability_size):
                                         husband.ability_i = ability_h
                                         husband.ability_value = c.normal_vector[ability_h] * p.sigma_ability_h  # wife ability - low, medium, high
-                                        for mother_educ_w in range(0, 1): #range(0, 2)
+                                        for mother_educ_w in range(0, c.mother_size): #range(0, 2)
                                             wife.mother_educ = mother_educ_w
-                                            for mother_educ_h in range(0, 1): #range(0, 2)
+                                            for mother_educ_h in range(0, c.mother_size): #range(0, 2)
                                                 husband.mother_educ = mother_educ_h
-                                                for mother_marital_w in range(0, 1): #range(0, 2)
+                                                for mother_marital_w in range(0, c.mother_size): #range(0, 2)
                                                     wife.mother_marital = mother_marital_w
-                                                    for mother_marital_h in range(0, 1): #range(0, 2)
+                                                    for mother_marital_h in range(0, c.mother_size): #range(0, 2)
                                                         husband.mother_marital = mother_marital_h
                                                         w_sum = 0
                                                         h_sum = 0
@@ -110,13 +110,13 @@ cpdef int married_couple_emax(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, 
                                                                 w_sum += single_women_value
                                                                 h_sum += single_man_value
                                                             # print("====================== new draw ======================")
-    # end draw backward loop
-    w_emax[t][school_w][school_h][exp_w][exp_h][kids][c.GOOD][c.GOOD][home_time_w][home_time_h][ability_w] \
-        [ability_h][mother_educ_w][mother_educ_h][mother_marital_w][mother_marital_h] = w_sum / c.DRAW_B
-    h_emax[t][school_w][school_h][exp_w][exp_h][kids][c.GOOD][c.GOOD][home_time_w][home_time_h][ability_w] \
-        [ability_h][mother_educ_w][mother_educ_h][mother_marital_w][mother_marital_h] = h_sum / c.DRAW_B
-    if verbose:
-        print("emax wife(", t, ", ", school_w, ", ", exp_w,", ", kids, ",", ability_w, ")=", w_sum / c.DRAW_B)
-        print("======================================================")
+                                                        # end draw backward loop
+                                                        w_emax[t][school_w][school_h][exp_w][exp_h][kids][c.GOOD][c.GOOD][home_time_w][home_time_h][ability_w] \
+                                                            [ability_h][mother_educ_w][mother_educ_h][mother_marital_w][mother_marital_h] = w_sum / c.DRAW_B
+                                                        h_emax[t][school_w][school_h][exp_w][exp_h][kids][c.GOOD][c.GOOD][home_time_w][home_time_h][ability_w] \
+                                                            [ability_h][mother_educ_w][mother_educ_h][mother_marital_w][mother_marital_h] = h_sum / c.DRAW_B
+                                                        if verbose:
+                                                            print("emax wife(", t, ", ", school_w, ", ", exp_w,", ", kids, ",", ability_w, ")=", w_sum / c.DRAW_B)
+                                                            print("======================================================")
 
     return iter_count

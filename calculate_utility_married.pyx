@@ -1,8 +1,11 @@
 # from libc.math import pow
 import numpy as np
+from libc.math cimport exp as cexp
 from parameters import p
 from value_to_index cimport exp_to_index
 from value_to_index cimport home_time_to_index
+from value_to_index cimport ability_to_index
+
 cimport gross_to_net as tax
 from draw_husband cimport Husband
 from draw_wife cimport Wife
@@ -66,6 +69,9 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     cdef int w_exp_index_p = 0
     cdef int w_home_time_index = 0
     cdef int w_home_time_index_preg = 0
+    cdef int mother_educ_index = 0
+    cdef int mother_marital_index = 0
+    cdef double temp
     # in variables' names: first index wife, second husband
     kids_temp = wife.kids + husband.kids   # if married, kids only at wife object.if consider getting married, add both kids
     net_income_married_Wue_Hue  = c.ub_w + c.ub_h
@@ -171,11 +177,11 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     else:
         preg_utility = float('-inf')
         # if husband is not married his home time is not influence by a newborn, the wife is influenced of course, so home time for her is not function of M
-    home_time_h = np.exp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h  + np.random.normal(0, 1) * p.sigma_hp_h)
-    home_time_w = np.exp(p.tau1_h * np.log(wife.home_time_ar)    + p.tau0_w  + np.random.normal(0, 1) * p.sigma_hp_w)
+    home_time_h = cexp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h  + np.random.normal(0, 1) * p.sigma_hp_h)
+    home_time_w = cexp(p.tau1_h * np.log(wife.home_time_ar)    + p.tau0_w  + np.random.normal(0, 1) * p.sigma_hp_w)
     if wife.age < 40:
-        home_time_h_preg = np.exp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h + p.tau2_h + np.random.normal(0, 1) * p.sigma_hp_h)
-        home_time_w_preg = np.exp(p.tau1_h * np.log(wife.home_time_ar) + p.tau0_w + p.tau2_w + np.random.normal(0, 1) * p.sigma_hp_w)
+        home_time_h_preg = cexp(p.tau1_h * np.log(husband.home_time_ar) + p.tau0_h + p.tau2_h + np.random.normal(0, 1) * p.sigma_hp_h)
+        home_time_w_preg = cexp(p.tau1_h * np.log(wife.home_time_ar) + p.tau0_w + p.tau2_w + np.random.normal(0, 1) * p.sigma_hp_w)
     else:
         home_time_h_preg = float('-inf')
         home_time_w_preg = float('-inf')
@@ -343,7 +349,7 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     ########               add emax or terminal value                                         ########
     ##################################################################################################
     ##################################################################################################
-    if t == c.max_period:
+    if t == c.max_period - 1:
         u_wife[0] = uc_wife[0] + p.t1_w*wife.hsg + p.t2_w*wife.sc + p.t3_w*wife.cg + p.t4_w*wife.pc + p.t5_w*wife.exp + p.t6_w*husband.hsg + p.t7_w*husband.sc + p.t8_w*husband.cg + p.t9_w*husband.pc + p.t10_w*husband.exp + p.t11_w * marriage_utility
         u_wife[1] = float('-inf')
         u_husband[0] = uc_husband[0] + p.t1_h * wife.hsg + p.t2_h * wife.sc + p.t3_h * wife.cg + p.t4_h * wife.pc + p.t5_h * wife.exp + p.t6_h * husband.hsg + p.t7_h * husband.sc + p.t8_h * husband.cg + p.t9_h * husband.pc + p.t10_h * husband.exp + p.t11_h * marriage_utility
@@ -412,7 +418,7 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
             u_husband[16] = float('-inf')
         u_wife[17] = float('-inf')
         u_husband[17] = float('-inf')
-    elif t < c.max_period:
+    elif t < c.max_period - 1:
         # t is not the terminal period so add emax
         # t - time 17-65
         # HS,wife.schooling - schooling - 5 levels grid
@@ -438,93 +444,109 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
         w_exp_index_p = exp_to_index(wife.exp+0.5)                     # increase experience by 0.5 if part-time job
         w_home_time_index = home_time_to_index(home_time_w)            # index of home time AR(1) if not pregnant
         w_home_time_index_preg = home_time_to_index(home_time_w_preg)  # index of home time AR(1) if pregnant
+        wife_ability_index = ability_to_index(wife.ability_i)
+        husband_ability_index = ability_to_index(husband.ability_i)
+        wife_mother_educ_index = c.mother_educ
+        wife_mother_marital_index = c.mother_marital
+        husband_mother_educ_index = c.mother_educ
+        husband_mother_marital_index = c.mother_marital
         if kids_temp < 3:
             kids_temp_preg = kids_temp + 1   # if pregnant - add another kid to emax, but only up to 3 kids
         else:
             kids_temp_preg = 3
-        u_wife[0]     = uc_wife[0]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index   ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-        u_husband[0]  = uc_husband[0]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index   ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-        u_wife[1]     = uc_wife[1]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-        u_husband[1]  = uc_husband[1]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+        u_wife[0]     = uc_wife[0]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index   ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+        u_husband[0]  = uc_husband[0]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index   ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+        u_wife[1]     = uc_wife[1]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+        u_husband[1]  = uc_husband[1]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
         if wage_h_full > 0:
-            u_wife[2]     = uc_wife[2]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[2]  = uc_husband[2]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_wife[3]     = uc_wife[3]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[3]  = uc_husband[3]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+            u_wife[2]     = uc_wife[2]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[2]  = uc_husband[2]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_wife[3]     = uc_wife[3]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[3]  = uc_husband[3]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
         else:
             u_wife[2] = float('-inf')
             u_wife[3] = float('-inf')
             u_husband[2] = float('-inf')
             u_husband[3] = float('-inf')
         if wage_h_full > 0:
-            u_wife[4]     = uc_wife[4]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[4]  = uc_husband[4]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_wife[5]     = uc_wife[5]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[5]  = uc_husband[5]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+            u_wife[4]     = uc_wife[4]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[4]  = uc_husband[4]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_wife[5]     = uc_wife[5]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[5]  = uc_husband[5]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
         else:
             u_wife[4] = float('-inf')
             u_wife[5] = float('-inf')
             u_husband[4] = float('-inf')
             u_husband[5] = float('-inf')
         if wage_w_full > 0:
-            u_wife[6]     = uc_wife[6]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[6]  = uc_husband[6]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_wife[7]     = uc_wife[7]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[7]  = uc_husband[7]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+            u_wife[6]     = uc_wife[6]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[6]  = uc_husband[6]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_wife[7]     = uc_wife[7]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[7]  = uc_husband[7]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
         else:
             u_wife[6] = float('-inf')
             u_wife[7] = float('-inf')
             u_husband[7] = float('-inf')
             u_husband[7] = float('-inf')
         if wage_h_full > 0 and wage_w_full > 0:
-            u_wife[8]     = uc_wife[8]     + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[8]  = uc_husband[8]  + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_wife[9]    = uc_wife[9]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[9] = uc_husband[9] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+            u_wife[8]     = uc_wife[8]     + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[8]  = uc_husband[8]  + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_wife[9]    = uc_wife[9]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[9] = uc_husband[9] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
         else:
             u_wife[8] = float('-inf')
             u_wife[9] = float('-inf')
             u_husband[8] = float('-inf')
             u_husband[9] = float('-inf')
         if wage_h_part > 0 and wage_w_full > 0:
-            u_wife[10]    = uc_wife[10]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[10] = uc_husband[10] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_wife[11]    = uc_wife[11]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[11] = uc_husband[11] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+            u_wife[10]    = uc_wife[10]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[10] = uc_husband[10] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_wife[11]    = uc_wife[11]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[11] = uc_husband[11] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
         else:
             u_wife[10] = float('-inf')
             u_wife[11] = float('-inf')
             u_husband[10] = float('-inf')
             u_husband[11] = float('-inf')
         if wage_w_part > 0:
-            u_wife[12]    = uc_wife[12]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[12] = uc_husband[12] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_wife[13]    = uc_wife[13]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[13] = uc_husband[13] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+            u_wife[12]    = uc_wife[12]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[12] = uc_husband[12] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_wife[13]    = uc_wife[13]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[13] = uc_husband[13] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_f, h_exp_index ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
         else:
             u_wife[12] = float('-inf')
             u_wife[13] = float('-inf')
             u_husband[12] = float('-inf')
             u_husband[13] = float('-inf')
         if wage_h_full > 0 and wage_w_part > 0:
-            u_wife[14]    = uc_wife[14]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[14] = uc_husband[14] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_wife[15]    = uc_wife[15]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[15] = uc_husband[15] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+            u_wife[14]    = uc_wife[14]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[14] = uc_husband[14] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_f ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_wife[15]    = uc_wife[15]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[15] = uc_husband[15] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_f ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
         else:
             u_wife[14] = float('-inf')
             u_wife[15] = float('-inf')
             u_husband[14] = float('-inf')
             u_husband[15] = float('-inf')
         if wage_h_part > 0 and wage_w_part > 0:
-            u_wife[16]    = uc_wife[16]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[16] = uc_husband[16] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_wife[17]    = uc_wife[17]    + c.beta0 * w_emax[t, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
-            u_husband[17] = uc_husband[17] + c.beta0 * h_emax[t, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife.ability_i, husband.ability_i, wife.mother_educ, husband.mother_educ, wife.mother_marital ,husband.mother_marital]
+            u_wife[16]    = uc_wife[16]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[16] = uc_husband[16] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp, wife.health, husband.health, w_home_time_index, h_home_time_index, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_wife[17]    = uc_wife[17]    + c.beta0 * w_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            u_husband[17] = uc_husband[17] + c.beta0 * h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            temp = h_emax[t+1, wife.schooling, husband.schooling, w_exp_index_p, h_exp_index_p ,kids_temp_preg, wife.health, husband.health, w_home_time_index_preg, h_home_time_index_preg, wife_ability_index, husband_ability_index, wife_mother_educ_index, husband_mother_educ_index, wife_mother_marital_index ,husband_mother_marital_index]
+            #print(temp)
+            #print("total utility")
+            #print(np.asarray(u_wife))
+            #print("current utility")
+            #print(np.asarray(uc_wife))
         else:
             u_wife[16] = float('-inf')
             u_wife[17] = float('-inf')
             u_husband[16] = float('-inf')
             u_husband[17] = float('-inf')
     # return the utility arrays of husband and wife + utility from home time for the AR process
+    #print("total utility")
+    #print(np.asarray(u_wife))
+    #print("current utility")
+    #print(np.asarray(uc_wife))
     return u_husband,  u_wife, home_time_h, home_time_w, home_time_h_preg, home_time_w_preg

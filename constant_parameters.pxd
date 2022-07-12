@@ -18,14 +18,14 @@ cdef double beta0  # discount rate
 cdef double MINIMUM_UTILITY
 cdef int[5] AGE_VALUES
 cdef int[5] exp_vector
-cdef double[3] home_time_vector
+cdef double[2] home_time_vector
 cdef int ub_h   # UNEMPLOYMENT BENEFIT HUSBAND
 cdef int ub_w   # UNEMPLOYMENT BENEFIT WIFE
 # work status: (unemp, emp)
 cdef int UNEMP
 cdef int EMP
 # ability wife/husband: (low, medium, high)) + match quality: (high, medium, low)
-cdef double[3] normal_vector
+cdef double[2] normal_vector
 # marital status: (unmarried, married)
 cdef int UNMARRIED
 cdef int MARRIED
@@ -37,6 +37,8 @@ cdef int ability_size
 cdef int home_time_size
 cdef int mother_size
 cdef int health_size
+cdef int mother_educ
+cdef int mother_marital
 # maximum fertility age
 cdef int MAX_FERTILITY_AGE
 cdef double eta1    # fraction from parents net income  that one kid get
