@@ -9,3 +9,4 @@
 *.obj
 *.lib
 cython_debug
+*.pxs
