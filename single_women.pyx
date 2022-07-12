@@ -4,7 +4,7 @@ cimport constant_parameters as c
 cimport draw_husband
 cimport draw_wife
 cimport calculate_wage
-from libc.math cimport exp as cexp
+cimport libc.math as cmath
 from calculate_utility_single_women cimport calculate_utility_single_women
 from calculate_utility_married cimport calculate_utility_married
 from calculate_utility_single_man cimport calculate_utility_single_man
@@ -78,10 +78,10 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                     wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
                                     single_women_value, _, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
                                     if wife.age < 20:
-                                        prob_meet_potential_partner = cexp(p.omega_1) / (1.0 + cexp(p.omega_1))
+                                        prob_meet_potential_partner = cmath.exp(p.omega_1) / (1.0 + cmath.exp(p.omega_1))
                                     else:
                                         temp = p.omega3 + p.omega4_w * wife.age + p.omega5_w * wife.age * wife.age
-                                        prob_meet_potential_partner = cexp(temp) / (1.0 + cexp(temp))
+                                        prob_meet_potential_partner = cmath.exp(temp) / (1.0 + cmath.exp(temp))
                                     if np.random.normal() < prob_meet_potential_partner:
                                         choose_partner = 1
                                         husband = draw_husband.draw_husband_forward(wife, mother[1], mother[2], mother[3])

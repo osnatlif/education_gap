@@ -1,6 +1,6 @@
 from parameters import p
 cimport constant_parameters as c
-from libc.math cimport exp as cexp
+cimport libc.math as cmath
 from draw_wife cimport Wife
 import numpy as np
 
@@ -127,20 +127,20 @@ cpdef Husband draw_husband_forward(Wife wife, double mother0, double mother1, do
         result.schooling = 1   # husband hsg
     else:
         if wife.schooling < 2:  # wife is HSD or HSG
-            match_cg = cexp(p.omega4_w + p.omega6_w) / (
-                1.0 + cexp(p.omega4_w + p.omega6_w) + cexp(p.omega7_w + p.omega8_w))  # probability of meeting cg if hs
-            match_sc = cexp(p.omega7_w + p.omega8_w) / (
-                1.0 + cexp(p.omega4_w + p.omega6_w) + cexp(p.omega7_w + p.omega8_w))  # probability of meeting sc if hs
+            match_cg = cmath.exp(p.omega4_w + p.omega6_w) / (
+                1.0 + cmath.exp(p.omega4_w + p.omega6_w) + cmath.exp(p.omega7_w + p.omega8_w))  # probability of meeting cg if hs
+            match_sc = cmath.exp(p.omega7_w + p.omega8_w) / (
+                1.0 + cmath.exp(p.omega4_w + p.omega6_w) + cmath.exp(p.omega7_w + p.omega8_w))  # probability of meeting sc if hs
             # match_hsg = 1.0 / (1.0 + np.exp(p.omega4_w + p.omega6_w) + np.exp(p.omega7_w + p.omega8_w))  # probability of meeting hs if hs
         elif wife.schooling == 2:
-            match_cg = cexp(p.omega4_w + p.omega5_w) / (
-                1.0 + cexp(p.omega4_w + p.omega5_w) + cexp(p.omega7_w))  # probability of meeting cg if sc
-            match_sc = cexp(p.omega7_w) / (
-                1.0 + cexp(p.omega4_w + p.omega5_w) + cexp(p.omega7_w))  # probability of meeting sc if sc
+            match_cg = cmath.exp(p.omega4_w + p.omega5_w) / (
+                1.0 + cmath.exp(p.omega4_w + p.omega5_w) + cmath.exp(p.omega7_w))  # probability of meeting cg if sc
+            match_sc = cmath.exp(p.omega7_w) / (
+                1.0 + cmath.exp(p.omega4_w + p.omega5_w) + cmath.exp(p.omega7_w))  # probability of meeting sc if sc
             # match_hsg = 1.0 / (1.0 + np.exp(p.omega4_w + p.omega5_w) + np.exp(p.omega7_w))  # probability of meeting hs if sc
         elif wife.schooling > 2:
-            match_cg = cexp(p.omega4_w) / (1.0 + cexp(p.omega4_w) + cexp(p.omega7_w))  # probability of meeting cg if cg
-            match_sc = cexp(p.omega7_w) / (1.0 + cexp(p.omega4_w) + cexp(p.omega7_w))  # probability of meeting sc if cg
+            match_cg = cmath.exp(p.omega4_w) / (1.0 + cmath.exp(p.omega4_w) + cmath.exp(p.omega7_w))  # probability of meeting cg if cg
+            match_sc = cmath.exp(p.omega7_w) / (1.0 + cmath.exp(p.omega4_w) + cmath.exp(p.omega7_w))  # probability of meeting sc if cg
             # match_hsg = 1.0 / (1.0 + np.exp(p.omega4_w) + np.exp(p.omega7_w))  # probability of meeting hs if cg
             # draw husband schooling
         temp = np.random.uniform(0, 1)

@@ -1,11 +1,10 @@
-#from libc.math import pow
 import numpy as np
 from parameters import p
 from value_to_index cimport exp_to_index
 from value_to_index cimport schooly_to_index
 from value_to_index cimport home_time_to_index
 from value_to_index cimport ability_to_index
-from libc.math cimport exp as cexp
+cimport libc.math as cmath
 cimport gross_to_net as tax
 cimport constant_parameters as c
 from draw_husband cimport Husband
@@ -64,14 +63,14 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
         budget_c_single_h_ep = (1 - etah) * net_income_single_h_ep
     # utility from quality and quality of children: #row0 - CES  parameter row1 - women leisure row2 - husband leisure row3 -income
     if husband.kids > 0:
-        kids_utility_single_h_ue = pow((p.row1_h * pow((1.0 - c.home_p), p.row0) + p.row2 * pow((c.eta1 * net_income_single_h_ue), p.row0) +
-                                        (1.0 - p.row1_h - p.row2) * pow((husband.kids), p.row0)),(1.0 / p.row0))
+        kids_utility_single_h_ue = cmath.pow((p.row1_h * cmath.pow((1.0 - c.home_p), p.row0) + p.row2 * cmath.pow((c.eta1 * net_income_single_h_ue), p.row0) +
+                                        (1.0 - p.row1_h - p.row2) * cmath.pow((husband.kids), p.row0)),(1.0 / p.row0))
         if wage_h_full > 0:
-            kids_utility_single_h_ef = pow((                                           p.row2 * pow((c.eta1 * net_income_single_h_ef), p.row0) +
-                                                                                       (1.0 - p.row1_h - p.row2) * pow((husband.kids), p.row0)), (1.0 / p.row0))
+            kids_utility_single_h_ef = cmath.pow((                                           p.row2 * cmath.pow((c.eta1 * net_income_single_h_ef), p.row0) +
+                                                                                       (1.0 - p.row1_h - p.row2) * cmath.pow((husband.kids), p.row0)), (1.0 / p.row0))
         if wage_h_part > 0:
-            kids_utility_single_h_ep = pow((p.row1_h * pow((1.0 - 0.5 - c.home_p), p.row0) + p.row2 * pow((c.eta1 * net_income_single_h_ep), p.row0) +
-                                            (1.0 - p.row1_h - p.row2) * pow((husband.kids), p.row0)), (1.0 / p.row0))
+            kids_utility_single_h_ep = cmath.pow((p.row1_h * cmath.pow((1.0 - 0.5 - c.home_p), p.row0) + p.row2 * cmath.pow((c.eta1 * net_income_single_h_ep), p.row0) +
+                                            (1.0 - p.row1_h - p.row2) * cmath.pow((husband.kids), p.row0)), (1.0 / p.row0))
     elif husband.kids == 0:
         kids_utility_single_h_ue = 0
         kids_utility_single_h_ef = 0
@@ -88,7 +87,7 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
     # if husband is not married his home time is not influence by a newborn, the wife is influenced of course, so home time for her is not function of M
     if husband.home_time_ar == 0:
         print("i'm here")
-    home_time_h = cexp((p.tau1_h * np.log(husband.home_time_ar)) + p.tau0_h + np.random.normal(0, 1) * p.sigma_hp_h)
+    home_time_h = cmath.exp((p.tau1_h * cmath.log(husband.home_time_ar)) + p.tau0_h + np.random.normal(0, 1) * p.sigma_hp_h)
     # home_time_h_m =(home_time_h_m_minus_1.^ tau1_h ) * exp(tau0_h+ tau2_h * P_minus_1 + epsilon_f(draw_f, t, 4) * sigma(4, 4));
     # home_time_h_um=(home_time_h_um_minus_1.^ tau1_h) * exp(tau0_h+                    epsilon_f(draw_f, t, 4) * sigma(4, 4));
 
@@ -106,16 +105,16 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
     u_husband_single[3] = float('-inf')    # single husband can't get pregnant
     u_husband_single[5] = float('-inf')    # single husband can't get pregnant
     # husband (potential husband) current utility from each option:
-    u_husband_single[0] = (1 / p.alpha0) * pow(budget_c_single_h_ue, p.alpha0) + \
-                          ((              p.alpha12_h * husband.schooling + p.alpha13_w * husband.health) / p.alpha2) * pow((1),p.alpha2) + p.alpha3_h_s * kids_utility_single_h_ue + home_time_h + divorce_cost_h * husband.married
+    u_husband_single[0] = (1 / p.alpha0) * cmath.pow(budget_c_single_h_ue, p.alpha0) + \
+                          ((              p.alpha12_h * husband.schooling + p.alpha13_w * husband.health) / p.alpha2) * cmath.pow((1),p.alpha2) + p.alpha3_h_s * kids_utility_single_h_ue + home_time_h + divorce_cost_h * husband.married
     if wage_h_full > 0:  # to avoid division by zero
-        u_husband_single[2] = (1 / p.alpha0) * pow(budget_c_single_h_ef, p.alpha0) + \
+        u_husband_single[2] = (1 / p.alpha0) * cmath.pow(budget_c_single_h_ef, p.alpha0) + \
                               p.alpha3_h_s * kids_utility_single_h_ef + divorce_cost_h * husband.married
     else:
         u_husband_single[2] = float('-inf')
     if wage_h_part > 0:  # capacity_w=0.5
-        u_husband_single[4] = (1 / p.alpha0) * pow(budget_c_single_h_ep, p.alpha0) + \
-                              ((              p.alpha12_w * husband.schooling + p.alpha13_w * husband.health) / p.alpha2) * pow((1 - 0.5 - c.home_p), p.alpha2) + p.alpha3_h_s * kids_utility_single_h_ep + \
+        u_husband_single[4] = (1 / p.alpha0) * cmath.pow(budget_c_single_h_ep, p.alpha0) + \
+                              ((              p.alpha12_w * husband.schooling + p.alpha13_w * husband.health) / p.alpha2) * cmath.pow((1 - 0.5 - c.home_p), p.alpha2) + p.alpha3_h_s * kids_utility_single_h_ep + \
                               home_time_h * (1 - 0.5 - c.home_p) + divorce_cost_h * husband.married
     else:
         u_husband_single[4] = float('-inf')
@@ -150,8 +149,6 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
     # need to take care of experience and number of children when calling the EMAX:
     # if women is pregnant, add 1 to the number of children unless the number is already 4
     elif t < c.max_period - 1:
-        # print("**********************************")
-        # print(np.asarray(h_s_emax[t + 1]))
         husband_exp_index = exp_to_index(husband.exp)
         husband_home_time_index = home_time_to_index(home_time_h)
         husband_ability_index = ability_to_index(husband.ability_i)
