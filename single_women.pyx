@@ -5,6 +5,8 @@ cimport draw_husband
 cimport draw_wife
 cimport calculate_wage
 cimport libc.math as cmath
+cdef extern from "randn.c":
+    double randn(double mu, double sigma)
 from calculate_utility_single_women cimport calculate_utility_single_women
 from calculate_utility_married cimport calculate_utility_married
 from calculate_utility_single_man cimport calculate_utility_single_man
@@ -82,7 +84,7 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                     else:
                                         temp = p.omega3 + p.omega4_w * wife.age + p.omega5_w * wife.age * wife.age
                                         prob_meet_potential_partner = cmath.exp(temp) / (1.0 + cmath.exp(temp))
-                                    if np.random.normal() < prob_meet_potential_partner:
+                                    if randn(0, 1) < prob_meet_potential_partner:
                                         choose_partner = 1
                                         husband = draw_husband.draw_husband_forward(wife, mother[1], mother[2], mother[3])
                                     if choose_partner == 1:

@@ -5,6 +5,8 @@ from value_to_index cimport schooly_to_index
 from value_to_index cimport home_time_to_index
 from value_to_index cimport ability_to_index
 cimport libc.math as cmath
+cdef extern from "randn.c":
+    double randn(double mu, double sigma)
 cimport gross_to_net as tax
 cimport constant_parameters as c
 from draw_husband cimport Husband
@@ -87,7 +89,7 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
     # if husband is not married his home time is not influence by a newborn, the wife is influenced of course, so home time for her is not function of M
     if husband.home_time_ar == 0:
         print("i'm here")
-    home_time_h = cmath.exp((p.tau1_h * cmath.log(husband.home_time_ar)) + p.tau0_h + np.random.normal(0, 1) * p.sigma_hp_h)
+    home_time_h = cmath.exp((p.tau1_h * cmath.log(husband.home_time_ar)) + p.tau0_h + randn(0, p.sigma_hp_h))
     # home_time_h_m =(home_time_h_m_minus_1.^ tau1_h ) * exp(tau0_h+ tau2_h * P_minus_1 + epsilon_f(draw_f, t, 4) * sigma(4, 4));
     # home_time_h_um=(home_time_h_um_minus_1.^ tau1_h) * exp(tau0_h+                    epsilon_f(draw_f, t, 4) * sigma(4, 4));
 

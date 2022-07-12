@@ -1,5 +1,7 @@
 import numpy as np
 cimport libc.math as cmath
+cdef extern from "randn.c":
+    double randn(double mu, double sigma)
 from parameters import p
 from value_to_index cimport exp_to_index
 from value_to_index cimport home_time_to_index
@@ -172,25 +174,25 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
         kids_utility_married_Wep_Hep = 0
     # utility from pregnancy when married / utility from pregnancy when SINGLE
     if wife.age < 40:
-        preg_utility = p.preg_health * wife.health + p.preg_kids * kids_temp + p.preg_t_minus1 * wife.preg + np.random.normal(0, 1) * p.sigma_p
+        preg_utility = p.preg_health * wife.health + p.preg_kids * kids_temp + p.preg_t_minus1 * wife.preg + randn(0, p.sigma_p)
     else:
         preg_utility = float('-inf')
         # if husband is not married his home time is not influence by a newborn, the wife is influenced of course, so home time for her is not function of M
-    home_time_h = cmath.exp(p.tau1_h * cmath.log(husband.home_time_ar) + p.tau0_h  + np.random.normal(0, 1) * p.sigma_hp_h)
-    home_time_w = cmath.exp(p.tau1_h * cmath.log(wife.home_time_ar)    + p.tau0_w  + np.random.normal(0, 1) * p.sigma_hp_w)
+    home_time_h = cmath.exp(p.tau1_h * cmath.log(husband.home_time_ar) + p.tau0_h  + randn(0, p.sigma_hp_h))
+    home_time_w = cmath.exp(p.tau1_h * cmath.log(wife.home_time_ar)    + p.tau0_w  + randn(0, p.sigma_hp_w))
     if wife.age < 40:
-        home_time_h_preg = cmath.exp(p.tau1_h * cmath.log(husband.home_time_ar) + p.tau0_h + p.tau2_h + np.random.normal(0, 1) * p.sigma_hp_h)
-        home_time_w_preg = cmath.exp(p.tau1_h * cmath.log(wife.home_time_ar) + p.tau0_w + p.tau2_w + np.random.normal(0, 1) * p.sigma_hp_w)
+        home_time_h_preg = cmath.exp(p.tau1_h * cmath.log(husband.home_time_ar) + p.tau0_h + p.tau2_h + randn(0, p.sigma_hp_h))
+        home_time_w_preg = cmath.exp(p.tau1_h * cmath.log(wife.home_time_ar) + p.tau0_w + p.tau2_w + randn(0, p.sigma_hp_w))
     else:
         home_time_h_preg = float('-inf')
         home_time_w_preg = float('-inf')
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     if wife.schooling == husband. schooling:
-        marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) +                np.random.normal(0, 1) * p.sigma_q  # utility from marriage
+        marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) +                randn(0, p.sigma_q)  # utility from marriage
     elif wife.schooling < husband. schooling:
-        marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) + p.taste_w_up + np.random.normal(0, 1) * p.sigma_q  # utility from marriage
+        marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) + p.taste_w_up + randn(0, p.sigma_q)  # utility from marriage
     else:
-        marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) + p.taste_w_down + np.random.normal(0, 1) * p.sigma_q  # utility from marriage
+        marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) + p.taste_w_down + randn(0, 1) * p.sigma_q  # utility from marriage
     marriage_cost_h = p.mc + p.mc_by_parents * husband.mother_marital
     marriage_cost_w = p.mc + p.mc_by_parents * wife.mother_marital
     # marriage options:# first index wife, second husband

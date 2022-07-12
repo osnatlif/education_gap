@@ -21,6 +21,7 @@ extensions = [
         Extension("single_men", ["single_men.pyx"]),
         Extension("single_women", ["single_women.pyx"]),
         Extension("math_perf", ["math_perf.pyx"]),
+        Extension("randn", ["randn.c"]),
         Extension("married_couple_emax", ["married_couple_emax.pyx"])
 ]
 setup(ext_modules=cythonize(extensions, language_level="3", gdb_debug=True))

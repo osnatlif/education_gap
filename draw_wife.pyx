@@ -2,6 +2,8 @@ import numpy as np
 from parameters import p
 cimport constant_parameters as c
 cimport libc.math as cmath
+cdef extern from "randn.c":
+    double randn(double mu, double sigma)
 from draw_husband cimport Husband
 
 # wives = np.loadtxt("wives.out")
@@ -130,7 +132,7 @@ cpdef update_ability_forward(Wife wife):
     temp_medium_ability = p.ab_medium1 + p.ab_medium2 * wife.mother_educ + p.ab_medium3 * wife.mother_marital
     prob_high_ability = temp_high_ability / (1 + temp_high_ability + temp_medium_ability)
     prob_medium_ability = temp_medium_ability / (1 + temp_high_ability + temp_medium_ability)
-    temp = np.random.normal()
+    temp = randn(0, 1)
     if temp < prob_high_ability:
         wife.ability_i = 2
         wife.ability_value = c.normal_vector[2] * p.sigma_ability_w

@@ -4,6 +4,8 @@ cimport value_to_index
 cimport gross_to_net as tax
 cimport constant_parameters as c
 cimport libc.math as cmath
+cdef extern from "randn.c":
+    double randn(double mu, double sigma)
 from draw_wife cimport Wife
 from value_to_index cimport ability_to_index
 from value_to_index cimport exp_to_index
@@ -147,7 +149,7 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     else:
         assert(0)
     if wife.age < 40:
-        preg_utility_um = p.preg_unmarried + p.preg_health * wife.health + p.preg_kids * wife.kids + p.preg_t_minus1 * wife.preg + np.random.normal(0, 1)*p.sigma_p
+        preg_utility_um = p.preg_unmarried + p.preg_health * wife.health + p.preg_kids * wife.kids + p.preg_t_minus1 * wife.preg + randn(0, p.sigma_p)
     else:
         preg_utility_um = float('-inf')
 
@@ -159,9 +161,9 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     else:
         school_utility_w = float('-inf')
     # Home time equation - random walk: tau2_w - pregnancy in previous period, tau1_w - drift term - should be negative
-    home_time_w =      cmath.exp((p.tau1_w * cmath.log(wife.home_time_ar)) + p.tau0_w            + np.random.normal(0,1) * p.sigma_hp_w)
+    home_time_w =      cmath.exp((p.tau1_w * cmath.log(wife.home_time_ar)) + p.tau0_w            + randn(0, p.sigma_hp_w))
     if wife.age < 40:
-        home_time_w_preg = cmath.exp((p.tau1_w * cmath.log(wife.home_time_ar)) + p.tau0_w + p.tau2_w + np.random.normal(0,1) * p.sigma_hp_w)
+        home_time_w_preg = cmath.exp((p.tau1_w * cmath.log(wife.home_time_ar)) + p.tau0_w + p.tau2_w + randn(0, p.sigma_hp_w))
     else:
         home_time_w_preg = float('-inf')
         # decision making - choose from up to 13 options, according to CHOOSE_HUSBAND, CHOOSE_WORK, AGE  values
