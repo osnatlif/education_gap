@@ -33,3 +33,9 @@ randn (double mu, double sigma)
 
   return (mu + sigma * (double) X1);
 }
+
+double
+uniform ()
+{
+    return (double)rand() / (double)RAND_MAX;
+}

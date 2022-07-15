@@ -6,8 +6,7 @@ cimport constant_parameters as c
 cimport libc.math as cmath
 cdef extern from "randn.c":
     double randn(double mu, double sigma)
-cdef extern from "stdlib.h":
-    double drand48()
+    double uniform()
 from draw_wife cimport Wife
 from value_to_index cimport ability_to_index
 from value_to_index cimport exp_to_index
@@ -87,7 +86,7 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     #      calculate utility for single women
     ###################################################################################################
     alimony_sum = 0
-    if wife.get_divorce() == 1 and wife.kids > 0 and np.random.uniform(0, 1) < p.p_alimony:
+    if wife.get_divorce() == 1 and wife.kids > 0 and uniform() < p.p_alimony:
         alimony_sum = p.alimony
 
     if wife.kids == 0:

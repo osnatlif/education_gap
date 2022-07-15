@@ -8,6 +8,7 @@ from libc.math cimport pow as cpow
 from scipy.stats import norm
 cdef extern from "randn.c":
     double randn(double mu, double sigma)
+    double uniform()
 
 
 cpdef test():
@@ -57,6 +58,7 @@ cpdef test():
     [cpow(v, 2) for v in arr]
     print("c results (usec):", 1000000 * (timeit.default_timer() - start_time) / arr_size)
 
+    print("normal random results")
     start_time = timeit.default_timer()
     for i in range(1, arr_size):
         v = norm.rvs(0, 1)
@@ -76,3 +78,19 @@ cpdef test():
     for i in range(1, arr_size):
         v = randn(0, 1)
     print("randn results (usec):", 1000000 * (timeit.default_timer() - start_time) / arr_size)
+
+    print("uniform random results")
+    start_time = timeit.default_timer()
+    for i in range(1, arr_size):
+        v = np.random.uniform(0, 1)
+    print("numpy results (usec):", 1000000 * (timeit.default_timer() - start_time) / arr_size)
+
+    start_time = timeit.default_timer()
+    for i in range(1, arr_size):
+        v = random.uniform(0, 1)
+    print("uniform results (usec):", 1000000 * (timeit.default_timer() - start_time) / arr_size)
+
+    start_time = timeit.default_timer()
+    for i in range(1, arr_size):
+        v = uniform()
+    print("c uniform results (usec):", 1000000 * (timeit.default_timer() - start_time) / arr_size)
