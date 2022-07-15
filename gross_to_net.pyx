@@ -120,7 +120,7 @@ cdef double gross_to_net_married(int kids, double wage_w, double wage_h, int t):
     # 1960 cohort - turns 16 at 1976 row 27, 1970 cohort row 37, 1980 cohort row 47
     deductions_m = ded_and_ex[year_row][1]
     exemptions_m = ded_and_ex[year_row][3] + ded_and_ex[year_row][5] * kids
-    if wage_h > 0.0:
+    if wage_h + wage_w > 0.0:
         reduced_income = wage_h + wage_w - deductions_m - exemptions_m
         tot_income = wage_h + wage_w
         eict = calculate_eict(tot_income, year_row, kids)

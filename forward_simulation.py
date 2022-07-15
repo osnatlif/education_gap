@@ -59,7 +59,8 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
                 else:
                     temp = p.omega3 + p.omega4_w * wife.get_age() + p.omega5_w * wife.get_age() * wife.get_age()
                     prob_meet_potential_partner = np.exp(temp)/(1.0+np.exp(temp))
-                if np.random.normal() < prob_meet_potential_partner:
+                temp = np.random.normal()
+                if temp < prob_meet_potential_partner:
                     choose_partner = 1
                     husband = draw_husband.draw_husband_forward(wife, mother[0], mother[1], mother[2])
                     if verbose:

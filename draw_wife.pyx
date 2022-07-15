@@ -4,6 +4,8 @@ cimport constant_parameters as c
 cimport libc.math as cmath
 cdef extern from "randn.c":
     double randn(double mu, double sigma)
+cdef extern from "stdlib.h":
+    double drand48()
 from draw_husband cimport Husband
 
 # wives = np.loadtxt("wives.out")
@@ -102,7 +104,7 @@ cpdef update_wife_schooling(Wife wife):
 
 cpdef update_mother_char(Wife wife, double mother0, double mother1, double mother2):
     cdef double temp
-    temp = np.random.randint(0, 100)  # draw wife's parents information + relevant child benefit
+    temp = np.random.uniform(0, 1)()*100  # draw wife's parents information + relevant child benefit
     if temp < mother0:
         wife.mother_educ = 0
         wife.mother_marital = 0
@@ -155,7 +157,7 @@ cpdef Wife draw_wife(Husband husband, double mother0, double mother1, double mot
     cdef double temp1
     cdef double match_cg
     cdef double match_sc
-    temp = np.random.randint(0, 100)  # draw wife's parents information
+    temp = np.random.uniform(0, 1)*100  # draw wife's parents information
     if temp < mother0:
         result.mother_educ = 0
         result.mother_marital = 0

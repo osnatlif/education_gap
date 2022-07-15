@@ -2,6 +2,8 @@ from parameters import p
 cimport constant_parameters as c
 cimport libc.math as cmath
 from draw_wife cimport Wife
+cdef extern from "stdlib.h":
+    double drand48()
 import numpy as np
 
 #cdef double[:,:] husbands2 = np.loadtxt("husbands_all_new.out")
@@ -89,7 +91,8 @@ cpdef update_school(Husband husband):         # this function update education i
 
 cpdef Husband draw_husband_forward(Wife wife, double mother0, double mother1, double mother2):
     cdef Husband result = Husband()
-    cdef double temp = np.random.randint(0, 100)  # draw wife's parents information
+    cdef double temp = np.random.uniform()*100
+    # draw wife's parents information
     if temp < mother0:
         result.mother_educ = 0
         result.mother_marital = 0
@@ -107,7 +110,7 @@ cpdef Husband draw_husband_forward(Wife wife, double mother0, double mother1, do
     cdef double temp_medium_ability = p.ab_medium1 + p.ab_medium2 * result.mother_educ + p.ab_medium3 * result.mother_marital
     cdef double prob_high_ability = temp_high_ability / (1 + temp_high_ability + temp_medium_ability)
     cdef double prob_medium_ability = temp_medium_ability / (1 + temp_high_ability + temp_medium_ability)
-    temp = np.random.uniform(0, 1)
+    temp = np.random.uniform()
     if temp < prob_high_ability:
         result.ability_i = 2
         result.ability_value = c.normal_vector[2] * p.sigma_ability_h
@@ -143,9 +146,9 @@ cpdef Husband draw_husband_forward(Wife wife, double mother0, double mother1, do
             match_sc = cmath.exp(p.omega7_w) / (1.0 + cmath.exp(p.omega4_w) + cmath.exp(p.omega7_w))  # probability of meeting sc if cg
             # match_hsg = 1.0 / (1.0 + np.exp(p.omega4_w) + np.exp(p.omega7_w))  # probability of meeting hs if cg
             # draw husband schooling
-        temp = np.random.uniform(0, 1)
+        temp = np.random.uniform()
         if temp < match_cg:
-            temp1 = np.random.uniform(0, 1)
+            temp1 = np.random.uniform()
             if temp1 < 0.9:  # fix to right number
                 result.schooling = 3  # cg
             else:
@@ -153,7 +156,7 @@ cpdef Husband draw_husband_forward(Wife wife, double mother0, double mother1, do
         if temp < match_cg + match_sc:
             result.schooling = 2  # sc
         else:
-            temp1 = np.random.uniform(0, 1)
+            temp1 = np.random.uniform()
             if temp1 < 0.8:  # fix to right number
                 result.schooling = 1  # hsg
             else:

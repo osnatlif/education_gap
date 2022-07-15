@@ -65,13 +65,13 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
         budget_c_single_h_ep = (1 - etah) * net_income_single_h_ep
     # utility from quality and quality of children: #row0 - CES  parameter row1 - women leisure row2 - husband leisure row3 -income
     if husband.kids > 0:
-        kids_utility_single_h_ue = cmath.pow((p.row1_h * cmath.pow((1.0 - c.home_p), p.row0) + p.row2 * cmath.pow((c.eta1 * net_income_single_h_ue), p.row0) +
+        kids_utility_single_h_ue = cmath.pow((p.row1_h * cmath.pow((c.leisure-c.home_p), p.row0) + p.row2 * cmath.pow((c.eta1 * net_income_single_h_ue), p.row0) +
                                         (1.0 - p.row1_h - p.row2) * cmath.pow((husband.kids), p.row0)),(1.0 / p.row0))
         if wage_h_full > 0:
             kids_utility_single_h_ef = cmath.pow((                                           p.row2 * cmath.pow((c.eta1 * net_income_single_h_ef), p.row0) +
                                                                                        (1.0 - p.row1_h - p.row2) * cmath.pow((husband.kids), p.row0)), (1.0 / p.row0))
         if wage_h_part > 0:
-            kids_utility_single_h_ep = cmath.pow((p.row1_h * cmath.pow((1.0 - 0.5 - c.home_p), p.row0) + p.row2 * cmath.pow((c.eta1 * net_income_single_h_ep), p.row0) +
+            kids_utility_single_h_ep = cmath.pow((p.row1_h * cmath.pow((c.leisure_part-c.home_p), p.row0) + p.row2 * cmath.pow((c.eta1 * net_income_single_h_ep), p.row0) +
                                             (1.0 - p.row1_h - p.row2) * cmath.pow((husband.kids), p.row0)), (1.0 / p.row0))
     elif husband.kids == 0:
         kids_utility_single_h_ue = 0
@@ -108,7 +108,19 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
     u_husband_single[5] = float('-inf')    # single husband can't get pregnant
     # husband (potential husband) current utility from each option:
     u_husband_single[0] = (1 / p.alpha0) * cmath.pow(budget_c_single_h_ue, p.alpha0) + \
-                          ((              p.alpha12_h * husband.schooling + p.alpha13_w * husband.health) / p.alpha2) * cmath.pow((1),p.alpha2) + p.alpha3_h_s * kids_utility_single_h_ue + home_time_h + divorce_cost_h * husband.married
+                          ((              p.alpha12_h * husband.schooling + p.alpha13_w * husband.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p),p.alpha2) + p.alpha3_h_s * kids_utility_single_h_ue + home_time_h + divorce_cost_h * husband.married
+    #print ("period")
+    #print(t)
+    #print(u_husband_single[0])
+    #temp = (1 / p.alpha0) * cmath.pow(budget_c_single_h_ue, p.alpha0)
+    #print(temp)
+    #temp = ((              p.alpha12_h * husband.schooling + p.alpha13_w * husband.health) / p.alpha2)* cmath.pow((c.leisure-c.home_p),p.alpha2)
+    #print(temp)
+    #temp = p.alpha3_h_s * kids_utility_single_h_ue
+    #print(temp)
+    #print(home_time_h)
+    #print(husband.married)
+
     if wage_h_full > 0:  # to avoid division by zero
         u_husband_single[2] = (1 / p.alpha0) * cmath.pow(budget_c_single_h_ef, p.alpha0) + \
                               p.alpha3_h_s * kids_utility_single_h_ef + divorce_cost_h * husband.married
@@ -116,7 +128,7 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
         u_husband_single[2] = float('-inf')
     if wage_h_part > 0:  # capacity_w=0.5
         u_husband_single[4] = (1 / p.alpha0) * cmath.pow(budget_c_single_h_ep, p.alpha0) + \
-                              ((              p.alpha12_w * husband.schooling + p.alpha13_w * husband.health) / p.alpha2) * cmath.pow((1 - 0.5 - c.home_p), p.alpha2) + p.alpha3_h_s * kids_utility_single_h_ep + \
+                              ((              p.alpha12_w * husband.schooling + p.alpha13_w * husband.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + p.alpha3_h_s * kids_utility_single_h_ep + \
                               home_time_h * (1 - 0.5 - c.home_p) + divorce_cost_h * husband.married
     else:
         u_husband_single[4] = float('-inf')
@@ -180,8 +192,5 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
     ###################################################################################
     single_value = max(u_husband)
     single_index = np.argmax(u_husband)
-    # print("value and index of max")
-    # print(single_max_option)
-    # print(single_max_option_index)
-    # print(u_wife)
+
     return single_value, single_index

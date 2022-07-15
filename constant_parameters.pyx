@@ -26,9 +26,12 @@ cdef int ub_w = 1000  # UNEMPLOYMENT BENEFIT WIFE
 # work status: (unemp, emp)
 cdef int UNEMP = 0
 cdef int EMP = 1
+cdef int leisure = 200
+cdef int leisure_part =100
 # ability wife/husband: (low, medium, high)) + match quality: (high, medium, low)
 # cdef double[:] normal_vector = [-1.150, 0.0, 1.150]
-cdef double[:] normal_vector = [-1.150,  1.150]
+cdef double[:] normal_vector = [-1.150, 0.0,  1.150]
+cdef double[:] ability_vector = [-1.150,  1.150]
 
 # marital status: (unmarried, married)
 cdef int UNMARRIED = 0

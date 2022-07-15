@@ -65,7 +65,7 @@ cdef int single_men(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :, :
                     husband.home_time_ar = c.home_time_vector[home_time]
                     for ability in range(0, c.ability_size):     # for each ability level: low, medium, high - open loop of ability
                         husband.ability_i = ability
-                        husband.ability_value = c.normal_vector[ability] * p.sigma_ability_h  # husband.ability - low, medium, high
+                        husband.ability_value = c.ability_vector[ability] * p.sigma_ability_h  # husband.ability - low, medium, high
                         for mother_educ in range(0,c.mother_size):
                             husband.mother_educ = mother_educ
                             for mother_marital in range(0, c.mother_size):

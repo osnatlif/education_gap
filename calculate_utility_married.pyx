@@ -73,19 +73,31 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     cdef int mother_educ_index = 0
     cdef int mother_marital_index = 0
     cdef double temp
+    cdef double utility_leisure = 0
+    cdef double utility_leisure_part = 0
+    cdef double utility_number_kids = 0
+
     # in variables' names: first index wife, second husband
     kids_temp = wife.kids + husband.kids   # if married, kids only at wife object.if consider getting married, add both kids
     net_income_married_Wue_Hue  = c.ub_w + c.ub_h
-    net_income_married_Wue_Hef  = c.ub_w + tax.gross_to_net_married(kids_temp,   0   , wage_h_full, t)
-    net_income_married_Wue_Hep  = c.ub_w + tax.gross_to_net_married(kids_temp,   0   , wage_h_part, t)
+    if wage_h_full > 0:
+        net_income_married_Wue_Hef  = c.ub_w + tax.gross_to_net_married(kids_temp,   0   , wage_h_full, t)
+    if wage_h_part > 0:
+        net_income_married_Wue_Hep  = c.ub_w + tax.gross_to_net_married(kids_temp,   0   , wage_h_part, t)
     ###############
-    net_income_married_Wef_Hue  = c.ub_h + tax.gross_to_net_married(kids_temp, wage_w_full,  0         , t)
-    net_income_married_Wef_Hef  =          tax.gross_to_net_married(kids_temp, wage_w_full, wage_h_full , t)
-    net_income_married_Wef_Hep  =          tax.gross_to_net_married(kids_temp, wage_w_full, wage_h_part , t)
+    if wage_w_full > 0:
+        net_income_married_Wef_Hue  = c.ub_h + tax.gross_to_net_married(kids_temp, wage_w_full,  0         , t)
+        if wage_h_full > 0:
+            net_income_married_Wef_Hef  =          tax.gross_to_net_married(kids_temp, wage_w_full, wage_h_full , t)
+        if wage_h_part > 0:
+            net_income_married_Wef_Hep  =          tax.gross_to_net_married(kids_temp, wage_w_full, wage_h_part , t)
     ###################
-    net_income_married_Wep_Hue = c.ub_h + tax.gross_to_net_married(kids_temp, wage_w_part,    0       , t)
-    net_income_married_Wep_Hef =          tax.gross_to_net_married(kids_temp, wage_w_part, wage_h_full, t)
-    net_income_married_Wep_Hep =          tax.gross_to_net_married(kids_temp, wage_w_part, wage_h_part, t)
+    if wage_w_part > 0:
+        net_income_married_Wep_Hue = c.ub_h + tax.gross_to_net_married(kids_temp, wage_w_part,    0       , t)
+        if wage_h_full > 0:
+            net_income_married_Wep_Hef =          tax.gross_to_net_married(kids_temp, wage_w_part, wage_h_full, t)
+        if wage_h_part > 0:
+            net_income_married_Wep_Hep =          tax.gross_to_net_married(kids_temp, wage_w_part, wage_h_part, t)
     # budget constraint
     if kids_temp == 0:
         eta = 0
@@ -122,46 +134,51 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     # I assume that each kid get 20% (eta1). if the family has 2 kids, each gets 20%, yet the total is 32% (eta2) since part is common
     if kids_temp > 0:
         # first index wife, second husband
-        kids_utility_married_Wue_Hue = (p.row1_w*cmath.pow(1.0-c.home_p, p.row0) +
-                                       p.row1_h*cmath.pow(1.0-c.home_p, p.row0) +
-                                       p.row2*cmath.pow(c.eta1*net_income_married_Wue_Hue, p.row0) +
-                                       (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+        utility_leisure = cmath.pow(c.leisure-c.home_p, p.row0)
+        utility_leisure_part = cmath.pow(c.leisure_part-c.home_p, p.row0)
+        utility_number_kids = (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(kids_temp, p.row0)
+
+        kids_utility_married_Wue_Hue = cmath.pow((p.row1_w * utility_leisure +
+                                       p.row1_h * utility_leisure +
+                                       p.row2 * cmath.pow(c.eta1*net_income_married_Wue_Hue, p.row0) +
+                                       utility_number_kids), 1.0/p.row0)
         if wage_h_full > 0:
-            kids_utility_married_Wue_Hef = (p.row1_w*cmath.pow(1.0-c.home_p, p.row0) +
+            kids_utility_married_Wue_Hef = cmath.pow((p.row1_w*utility_leisure +
                                             p.row2*cmath.pow(c.eta1*net_income_married_Wue_Hef, p.row0) +
-                                            (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+                                            utility_number_kids), 1.0/p.row0)
         if wage_h_part > 0:
-            kids_utility_married_Wue_Hep = (p.row1_w*cmath.pow(1.0-c.home_p, p.row0) +
-                                            p.row1_h*cmath.pow(1.0-0.5-c.home_p, p.row0) +
-                                            p.row2*cmath.pow(c.eta1*net_income_married_Wue_Hep, p.row0) +
-                                            (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+            kids_utility_married_Wue_Hep = cmath.pow((p.row1_w * utility_leisure +
+                                            p.row1_h * utility_leisure_part +
+                                            p.row2*cmath.pow(c.eta1 * net_income_married_Wue_Hep, p.row0) +
+                                            utility_number_kids), 1.0/p.row0)
         #########################
         if wage_w_full > 0:
-            kids_utility_married_Wef_Hue = (p.row1_h*cmath.pow(1.0-c.home_p, p.row0) +
+            kids_utility_married_Wef_Hue = cmath.pow((p.row1_h* utility_leisure +
                                             p.row2*cmath.pow(c.eta1*net_income_married_Wef_Hue, p.row0) +
-                                            (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+                                            utility_number_kids), 1.0/p.row0)
             if wage_h_full > 0:
-                kids_utility_married_Wef_Hef = (p.row2*cmath.pow(c.eta1*net_income_married_Wef_Hef, p.row0) +
-                                                (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+                kids_utility_married_Wef_Hef = cmath.pow((p.row2*cmath.pow(c.eta1*net_income_married_Wef_Hef, p.row0) +
+                                                utility_number_kids), 1.0/p.row0)
             if wage_h_part > 0:
-                kids_utility_married_Wef_Hep = (p.row1_h*cmath.pow(1.0-0.5-c.home_p, p.row0) +
+                kids_utility_married_Wef_Hep = cmath.pow((p.row1_h*utility_leisure_part +
                                                 p.row2*cmath.pow(c.eta1*net_income_married_Wef_Hep, p.row0) +
-                                                (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+                                                utility_number_kids), 1.0/p.row0)
         #####################
         if wage_w_part > 0:
-            kids_utility_married_Wep_Hue = (p.row1_w*cmath.pow(1.0-0.5-c.home_p, p.row0) +
-                                            p.row1_h*cmath.pow(1.0-c.home_p, p.row0) +
+            kids_utility_married_Wep_Hue = cmath.pow((p.row1_w*utility_leisure_part +
+                                            p.row1_h*utility_leisure +
                                             p.row2*cmath.pow(c.eta1*net_income_married_Wep_Hue, p.row0) +
-                                            (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+                                            utility_number_kids), 1.0/p.row0)
             if wage_h_full > 0:
-                kids_utility_married_Wep_Hef = (p.row1_w*cmath.pow(1.0-0.5-c.home_p, p.row0) +
+                kids_utility_married_Wep_Hef = cmath.pow((p.row1_w*utility_leisure_part +
                                                 p.row2*cmath.pow(c.eta1*net_income_married_Wep_Hef, p.row0) +
-                                                (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+                                                utility_number_kids), 1.0/p.row0)
             if wage_h_part > 0:
-                kids_utility_married_Wep_Hep = (p.row1_w*cmath.pow(1.0-0.5-c.home_p, p.row0) +
-                                                p.row1_h*cmath.pow(1.0-0.5-c.home_p, p.row0) +
+                kids_utility_married_Wep_Hep = cmath.pow((p.row1_w*utility_leisure_part +
+                                                p.row1_h*utility_leisure_part +
                                                 p.row2*cmath.pow(c.eta1*net_income_married_Wep_Hep, p.row0) +
-                                                (1-p.row1_w-p.row1_h-p.row2)*cmath.pow(cmath.pow(kids_temp, p.row0), 1.0/p.row0))
+                                                utility_number_kids), 1.0/p.row0)
+
     elif kids_temp == 0:
         kids_utility_married_Wue_Hue = 0
         kids_utility_married_Wue_Hef = 0
@@ -172,6 +189,7 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
         kids_utility_married_Wep_Hue = 0
         kids_utility_married_Wep_Hef = 0
         kids_utility_married_Wep_Hep = 0
+
     # utility from pregnancy when married / utility from pregnancy when SINGLE
     if wife.age < 40:
         preg_utility = p.preg_health * wife.health + p.preg_kids * kids_temp + p.preg_t_minus1 * wife.preg + randn(0, p.sigma_p)
@@ -186,6 +204,10 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     else:
         home_time_h_preg = float('-inf')
         home_time_w_preg = float('-inf')
+    if wife.age < 39:
+        print("home time wife without and with preg")
+        print(home_time_w_preg)
+        print(home_time_w)
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     if wife.schooling == husband. schooling:
         marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) +                randn(0, p.sigma_q)  # utility from marriage
@@ -216,19 +238,19 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     #                        17-married + women employed part  +man employed part  +pregnant
     # marriage options:# first index wife, second husband
     uc_wife[0] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wue_Hue, p.alpha0) + marriage_cost_w * (1-wife.married) + \
-                 ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow(1, p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hue + home_time_w
+                 ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow((c.leisure-c.home_p), p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hue + home_time_w
     uc_wife[1] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wue_Hue, p.alpha0) + marriage_cost_w * (1-wife.married) + \
-                 ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow(1, p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hue + home_time_w_preg + preg_utility
+                 ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow((c.leisure-c.home_p), p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hue + home_time_w_preg + preg_utility
     uc_husband[0] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wue_Hue, p.alpha0) + marriage_cost_h * (1 - husband.married) + \
-                    ((             p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1, p.alpha2) + p.alpha3_h_m * kids_utility_married_Wue_Hue + home_time_h
+                    ((             p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p), p.alpha2) + p.alpha3_h_m * kids_utility_married_Wue_Hue + home_time_h
     uc_husband[1] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wue_Hue, p.alpha0) + marriage_cost_h * (1 - husband.married) + \
-                    ((             p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1, p.alpha2) + p.alpha3_h_m * kids_utility_married_Wue_Hue + home_time_h_preg + preg_utility
+                    ((             p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p), p.alpha2) + p.alpha3_h_m * kids_utility_married_Wue_Hue + home_time_h_preg + preg_utility
 
     if wage_h_full > 0:
         uc_wife[2] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wue_Hef, p.alpha0) + marriage_cost_w * (1-wife.married) + \
-                     ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow(1, p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hef + home_time_w
+                     ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow((c.leisure-c.home_p), p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hef + home_time_w
         uc_wife[3] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wue_Hef, p.alpha0) + marriage_cost_w * (1-wife.married) + \
-                     ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow(1, p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hef + home_time_w_preg + preg_utility
+                     ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow((c.leisure-c.home_p), p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hef + home_time_w_preg + preg_utility
         uc_husband[2] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wue_Hef, p.alpha0) + marriage_cost_h * (1 - husband.married) + \
                         p.alpha3_h_m * kids_utility_married_Wue_Hef
         uc_husband[3] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wue_Hef, p.alpha0) + marriage_cost_h * (1 - husband.married) + \
@@ -241,13 +263,17 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
 
     if wage_h_part > 0:
         uc_wife[4] = marriage_utility + (1 / p.alpha0) * cmath.pow(budget_c_married_Wue_Hep, p.alpha0) + marriage_cost_w * (1-wife.married) + \
-                     ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow(1, p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hep + home_time_w
+                     ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow((c.leisure-c.home_p), p.alpha2) +\
+                     p.alpha3_w_m * kids_utility_married_Wue_Hep + home_time_w
         uc_wife[5] = marriage_utility + (1 / p.alpha0) * cmath.pow(budget_c_married_Wue_Hep, p.alpha0) + marriage_cost_w * (1-wife.married)  + \
-                     ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow(1, p.alpha2) + p.alpha3_w_m * kids_utility_married_Wue_Hep + home_time_w_preg + preg_utility
+                     ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2)*cmath.pow((c.leisure-c.home_p), p.alpha2) + \
+                     p.alpha3_w_m * kids_utility_married_Wue_Hep + home_time_w_preg + preg_utility
         uc_husband[4] = marriage_utility + (1 / p.alpha0) * cmath.pow(budget_c_married_Wue_Hep, p.alpha0) + marriage_cost_h * (1 - husband.married) + \
-                        ((         p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1 - 0.5 - c.home_p, p.alpha2) + p.alpha3_h_m * kids_utility_married_Wue_Hep + home_time_h * (1 - 0.5 - c.home_p)
+                        ((         p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) +\
+                        p.alpha3_h_m * kids_utility_married_Wue_Hep + home_time_h * (c.leisure_part-c.home_p)
         uc_husband[5] = marriage_utility + (1 / p.alpha0) * cmath.pow(budget_c_married_Wue_Hep, p.alpha0) + marriage_cost_h * (1 - husband.married) + \
-                        ((         p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1 - 0.5 - c.home_p, p.alpha2) + p.alpha3_h_m * kids_utility_married_Wue_Hep + home_time_h_preg * (1 - 0.5 - c.home_p) + preg_utility
+                        ((         p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + \
+                        p.alpha3_h_m * kids_utility_married_Wue_Hep + home_time_h_preg * (c.leisure_part-c.home_p) + preg_utility
     else:
         uc_wife[4] = float('-inf')
         uc_wife[5] = float('-inf')
@@ -258,9 +284,9 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
         uc_wife[6]= marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hue, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wef_Hue + marriage_cost_w * (1-wife.married)
         uc_wife[7]= marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hue, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wef_Hue + marriage_cost_w * (1-wife.married) + preg_utility
         uc_husband[6] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hue, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wef_Hue + marriage_cost_h * (1 - husband.married) + \
-                        ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1, p.alpha2) + home_time_h
+                        ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p), p.alpha2) + home_time_h
         uc_husband[7] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hue, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wef_Hue + marriage_cost_w * (1 - husband.married) + preg_utility + \
-                        ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1, p.alpha2) + home_time_h_preg
+                        ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p), p.alpha2) + home_time_h_preg
         if wage_h_full > 0:             # both employed full
             uc_wife[8] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hef, p.alpha0) +  p.alpha3_w_m * kids_utility_married_Wef_Hef + marriage_cost_w * (1-wife.married)
             uc_wife[9] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hef, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wef_Hef +  marriage_cost_w * (1-wife.married) +preg_utility
@@ -275,9 +301,9 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
             uc_wife[10] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hep, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wef_Hep + marriage_cost_w * (1-wife.married)
             uc_wife[11] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hep, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wef_Hep + marriage_cost_w * (1-wife.married) + preg_utility
             uc_husband[10] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hep, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wef_Hep + marriage_cost_h * (1 - husband.married)
-            ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1 - 0.5 - c.home_p, p.alpha2)  + home_time_h * (1 - 0.5 - c.home_p)
+            ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2)  + home_time_h * (c.leisure_part-c.home_p)
             uc_husband[11] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wef_Hep, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wef_Hep + marriage_cost_h * (1 - husband.married) + preg_utility
-            ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1 - 0.5 - c.home_p, p.alpha2) + home_time_h_preg * (1 - 0.5 - c.home_p) + preg_utility
+            ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + home_time_h_preg * (c.leisure_part-c.home_p) + preg_utility
         else:
             uc_wife[10] = float('-inf')
             uc_wife[11] = float('-inf')
@@ -299,18 +325,18 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     ##################################################################################################################
     if wage_w_part > 0:  # if wife got part-time job offer
         uc_wife[12] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hue, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wep_Hue + marriage_cost_w * (1-wife.married) \
-                      + ((p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow(1-0.5-c.home_p, p.alpha2) + home_time_w*(1-0.5-c.home_p)
+                      + ((p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + home_time_w*(c.leisure_part-c.home_p)
         uc_wife[13] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hue, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wep_Hue + marriage_cost_w * (1-wife.married) \
-                      + ((p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow(1-0.5-c.home_p, p.alpha2) + home_time_w_preg*(1-0.5-c.home_p) + preg_utility
+                      + ((p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + home_time_w_preg*(c.leisure_part-c.home_p) + preg_utility
         uc_husband[12] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hue, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wep_Hue + marriage_cost_h * (1 - husband.married) \
-                         + ((p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1 - c.home_p, p.alpha2) + home_time_h
+                         + ((p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p), p.alpha2) + home_time_h
         uc_husband[13] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hue, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wep_Hue + marriage_cost_h * (1 - husband.married) \
-                         + ((p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow(1 - c.home_p, p.alpha2) + home_time_h_preg + preg_utility
+                         + ((p.alpha12_h * husband.schooling + p.alpha13_h * husband.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p), p.alpha2) + home_time_h_preg + preg_utility
         if wage_h_full > 0:
             uc_wife[14] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hef, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wep_Hef + marriage_cost_w * (1-wife.married) \
-                          + ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow(1-0.5-c.home_p, p.alpha2) + home_time_w*(1-0.5-c.home_p)
+                          + ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + home_time_w*(c.leisure_part-c.home_p)
             uc_wife[15] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hef, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wep_Hef + marriage_cost_w * (1-wife.married) \
-                          + ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow(1-0.5-c.home_p,p.alpha2) + home_time_w_preg*(1-0.5-c.home_p) + preg_utility
+                          + ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow((c.leisure_part-c.home_p),p.alpha2) + home_time_w_preg*(c.leisure_part-c.home_p) + preg_utility
             uc_husband[14] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hef, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wep_Hef + marriage_cost_h * (1-husband.married)
             uc_husband[15] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hef, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wep_Hef + marriage_cost_h * (1-husband.married) + preg_utility
         else:
@@ -320,13 +346,13 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
             uc_husband[15] = float('-inf')
         if wage_h_part > 0:
             uc_wife[16] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hep, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wep_Hep + marriage_cost_w * (1-wife.married) \
-                          + ((               p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow(1 - 0.5 - c.home_p, p.alpha2) + home_time_w*(1 - 0.5 - c.home_p)
+                          + ((               p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + home_time_w*(c.leisure_part-c.home_p)
             uc_wife[17] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hep, p.alpha0) + p.alpha3_w_m * kids_utility_married_Wep_Hep + marriage_cost_w * (1-wife.married) \
-                          + ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow(1 - 0.5 - c.home_p, p.alpha2) + home_time_w_preg*(1 - 0.5 - c.home_p) + preg_utility
+                          + ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health)/p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + home_time_w_preg*(c.leisure_part-c.home_p) + preg_utility
             uc_husband[16] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hep, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wep_Hep + marriage_cost_h * (1-husband.married) \
-                             + ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health)/p.alpha2) * cmath.pow(1 - 0.5 - c.home_p, p.alpha2) + home_time_h*(1 - 0.5 - c.home_p)
+                             + ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health)/p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + home_time_h*(c.leisure_part-c.home_p)
             uc_husband[17] = marriage_utility + (1/p.alpha0) * cmath.pow(budget_c_married_Wep_Hep, p.alpha0) + p.alpha3_h_m * kids_utility_married_Wep_Hep + marriage_cost_h * (1-husband.married) \
-                             + ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health)/p.alpha2) * cmath.pow(1 - 0.5 - c.home_p, p.alpha2) + home_time_h_preg*(1 - 0.5 - c.home_p) + preg_utility
+                             + ((              p.alpha12_h * husband.schooling + p.alpha13_h * husband.health)/p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + home_time_h_preg*(c.leisure_part-c.home_p) + preg_utility
         else:
             uc_wife[16] = float('-inf')
             uc_wife[17] = float('-inf')
@@ -550,4 +576,14 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     #print(np.asarray(u_wife))
     #print("current utility")
     #print(np.asarray(uc_wife))
+    if husband.age < 30:
+        print("value and index of max")
+        print("period")
+        print(t)
+        print("husband total and current")
+        print(np.asarray(u_husband))
+        print(np.asarray(uc_husband))
+        print("wife total and current")
+        print(np.asarray(u_wife))
+        print(np.asarray(uc_wife))
     return u_husband,  u_wife, home_time_h, home_time_w, home_time_h_preg, home_time_w_preg

@@ -6,10 +6,11 @@ cimport constant_parameters as c
 cimport libc.math as cmath
 cdef extern from "randn.c":
     double randn(double mu, double sigma)
+cdef extern from "stdlib.h":
+    double drand48()
 from draw_wife cimport Wife
 from value_to_index cimport ability_to_index
 from value_to_index cimport exp_to_index
-from value_to_index cimport schooly_to_index
 from value_to_index cimport home_time_to_index
 
 cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
@@ -55,7 +56,7 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     cdef double ar = 0
     cdef int wife_mother_educ_index = 0
     cdef int wife_mother_marital_index = 0
-
+    cdef double temp
     # get specific cohort data
     if c.cohort == 1960:
         cb_const = c.cb_const_60
@@ -86,7 +87,7 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     #      calculate utility for single women
     ###################################################################################################
     alimony_sum = 0
-    if wife.get_divorce() == 1 and wife.kids > 0 and np.random.uniform(1, 1) < p.p_alimony:
+    if wife.get_divorce() == 1 and wife.kids > 0 and np.random.uniform(0, 1) < p.p_alimony:
         alimony_sum = p.alimony
 
     if wife.kids == 0:
@@ -131,14 +132,14 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
 
     #  utility from quality and quality of children: #row0 - CES  parameter row1 - women leisure row2 - husband leisure row3 -income
     if wife.kids > 0:
-        kids_utility_single_w_ue = cmath.pow((p.row1_w*cmath.pow((1.0-c.home_p),p.row0) +    p.row2*cmath.pow((c.eta1*net_income_single_w_ue),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
-        kids_utility_single_w_ue_welfare = cmath.pow((p.row1_w*cmath.pow((1.0-c.home_p),p.row0) +    p.row2*cmath.pow((c.eta1*net_income_single_w_ue_welfare),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
+        kids_utility_single_w_ue = cmath.pow((p.row1_w*cmath.pow((c.leisure-c.home_p),p.row0) +    p.row2*cmath.pow((c.eta1*net_income_single_w_ue),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
+        kids_utility_single_w_ue_welfare = cmath.pow((p.row1_w*cmath.pow((c.leisure-c.home_p),p.row0) +    p.row2*cmath.pow((c.eta1*net_income_single_w_ue_welfare),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
         if wage_w_full > 0:
             kids_utility_single_w_ef = cmath.pow((                                     p.row2*cmath.pow((c.eta1*net_income_single_w_ef),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
             kids_utility_single_w_ef_welfare = cmath.pow((p.row2 * cmath.pow((c.eta1 * net_income_single_w_ef_welfare), p.row0) + (1.0 - p.row1_w - p.row2) * cmath.pow((wife.kids), p.row0)), (1.0 / p.row0))
         if wage_w_part > 0:
-            kids_utility_single_w_ep = cmath.pow((p.row1_w*cmath.pow((1.0-0.5-c.home_p),p.row0)+ p.row2*cmath.pow((c.eta1*net_income_single_w_ep),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
-            kids_utility_single_w_ep_welfare = cmath.pow((p.row1_w*cmath.pow((1.0-0.5-c.home_p),p.row0)+ p.row2*cmath.pow((c.eta1*net_income_single_w_ep_welfare),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
+            kids_utility_single_w_ep = cmath.pow((p.row1_w*cmath.pow((c.leisure_part-c.home_p),p.row0)+ p.row2*cmath.pow((c.eta1*net_income_single_w_ep),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
+            kids_utility_single_w_ep_welfare = cmath.pow((p.row1_w*cmath.pow((c.leisure_part-c.home_p),p.row0)+ p.row2*cmath.pow((c.eta1*net_income_single_w_ep_welfare),p.row0)+(1.0-p.row1_w-p.row2)*cmath.pow((wife.kids),p.row0)),(1.0/p.row0))
     elif wife.kids == 0:
         kids_utility_single_w_ue = 0
         kids_utility_single_w_ef = 0
@@ -186,18 +187,18 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     divorce_cost_w = p.dc_w + p.dc_w_kids * wife.kids
     u_wife_single = np.empty(13)
     u_wife_single[0] = (1 / p.alpha0) * cmath.pow(budget_c_single_w_ue, p.alpha0) + \
-        ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((1),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ue + home_time_w + divorce_cost_w * wife.married
+        ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ue + home_time_w + divorce_cost_w * wife.married
     if wife.age < 40:
         u_wife_single[1] = (1 / p.alpha0) * cmath.pow(budget_c_single_w_ue, p.alpha0) +   \
-            ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((1),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ue + home_time_w_preg + preg_utility_um + divorce_cost_w * wife.married
+            ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ue + home_time_w_preg + preg_utility_um + divorce_cost_w * wife.married
     else:
         u_wife_single[1] = float('-inf')
     if wife.kids > 0 and wife.welfare_periods < 5:  # max number of periods on welfare is 5
         u_wife_single[7] = (1 / p.alpha0) * cmath.pow(budget_c_single_w_ue_welfare, p.alpha0) + \
-            ((p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((1),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ue_welfare + home_time_w + divorce_cost_w * wife.married
+            ((p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ue_welfare + home_time_w + divorce_cost_w * wife.married
         if wife.age < 40:
             u_wife_single[8] = (1 / p.alpha0) * cmath.pow(budget_c_single_w_ue_welfare, p.alpha0) + \
-                ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((1),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ue_welfare + home_time_w_preg + preg_utility_um + divorce_cost_w * wife.married
+                ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((c.leisure-c.home_p),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ue_welfare + home_time_w_preg + preg_utility_um + divorce_cost_w * wife.married
         else:
             u_wife_single[8] = float('-inf')
     else:
@@ -229,21 +230,21 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     # fill all options for part-time work
     if wage_w_part > 0:  # capacity_w=0.5
         u_wife_single[4] = (1 / p.alpha0) * cmath.pow(budget_c_single_w_ep, p.alpha0) + \
-            ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((1 - 0.5 - c.home_p), p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ep + \
+            ((              p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ep + \
             home_time_w * (1 - 0.5 - c.home_p) + divorce_cost_w * wife.married
         if wife.age < 40:
             u_wife_single[5] = (1 / p.alpha0) * cmath.pow(budget_c_single_w_ep, p.alpha0) +   \
-                ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((1 - 0.5 - c.home_p),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ep + \
+                ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p),p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ep + \
                 home_time_w_preg * (1 - 0.5 - c.home_p) + preg_utility_um + divorce_cost_w * wife.married
         else:
             u_wife_single[5] = float('-inf')
         if wife.kids > 0 and wife.welfare_periods < 5:  # max number of periods on welfare is 5
             u_wife_single[11] = (1 / p.alpha0) * cmath.pow(budget_c_single_w_ep_welfare, p.alpha0) + \
-                ((p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((1 - 0.5 - c.home_p), p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ep_welfare + \
+                ((p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ep_welfare + \
                 home_time_w * (1 - 0.5 - c.home_p) + divorce_cost_w * wife.married
             if wife.age < 40:
                 u_wife_single[12] = (1 / p.alpha0) * cmath.pow(budget_c_single_w_ep_welfare, p.alpha0) + \
-                    ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((1 - 0.5 - c.home_p), p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ep_welfare + \
+                    ((p.alpha11_w + p.alpha12_w * wife.schooling + p.alpha13_w * wife.health) / p.alpha2) * cmath.pow((c.leisure_part-c.home_p), p.alpha2) + p.alpha3_w_s * kids_utility_single_w_ep_welfare + \
                     home_time_w_preg * (1 - 0.5 - c.home_p) + preg_utility_um + divorce_cost_w * wife.married
             else:
                 u_wife_single[12] = float('-inf')
@@ -371,10 +372,6 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     ###################################################################################
     single_value = max(u_wife)
     single_index = np.argmax(u_wife)
-    # print("value and index of max")
-    # print(single_max_option)
-    # print(single_max_option_index)
-    # print(u_wife)
     # single_women_pregnancy_index_array = [1, 3, 5, 8, 10, 12]
     if single_index==1 or single_index==3 or single_index==5 or single_index==8 or single_index==10 or single_index==12:
         ar = home_time_w_preg

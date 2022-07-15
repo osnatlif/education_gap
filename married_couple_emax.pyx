@@ -48,9 +48,6 @@ cpdef int married_couple_emax(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, 
 
     wife.age = 17 + t
     husband.age = wife.age
-    wife.married = 1
-    husband.married = 1
-    wife.divorce = 0
     # [c.max_period, c.school_size, c.school_size, c.exp_size, c.exp_size,c.kids_size, c.health_size, c.health_size,
     # c.home_time_size, c.home_time_size, c.ability_size, c.ability_size, c.mother_size, c.mother_size, c.mother_size,
     # c.mother_size])
@@ -72,10 +69,10 @@ cpdef int married_couple_emax(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, 
                                 husband.home_time_ar = c.home_time_vector[home_time_h]
                                 for ability_w in range(0, c.ability_size):     # for each ability level: low, medium, high - open loop of ability
                                     wife.ability_i = ability_w
-                                    wife.ability_value = c.normal_vector[ability_w] * p.sigma_ability_w  # wife ability - low, medium, high
+                                    wife.ability_value = c.ability_vector[ability_w] * p.sigma_ability_w  # wife ability - low, medium, high
                                     for ability_h in range(0, c.ability_size):
                                         husband.ability_i = ability_h
-                                        husband.ability_value = c.normal_vector[ability_h] * p.sigma_ability_h  # wife ability - low, medium, high
+                                        husband.ability_value = c.ability_vector[ability_h] * p.sigma_ability_h  # wife ability - low, medium, high
                                         for mother_educ_w in range(0, c.mother_size): #range(0, 2)
                                             wife.mother_educ = mother_educ_w
                                             for mother_educ_h in range(0, c.mother_size): #range(0, 2)

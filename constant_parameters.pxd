@@ -24,8 +24,11 @@ cdef int ub_w   # UNEMPLOYMENT BENEFIT WIFE
 # work status: (unemp, emp)
 cdef int UNEMP
 cdef int EMP
+cdef int leisure
+cdef int leisure_part
 # ability wife/husband: (low, medium, high)) + match quality: (high, medium, low)
-cdef double[2] normal_vector
+cdef double[3] normal_vector
+cdef double[2] ability_vector
 # marital status: (unmarried, married)
 cdef int UNMARRIED
 cdef int MARRIED
