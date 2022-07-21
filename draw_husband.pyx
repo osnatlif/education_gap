@@ -92,7 +92,7 @@ cpdef update_school(Husband husband):         # this function update education i
 cpdef Husband draw_husband_forward(Wife wife, double mother0, double mother1, double mother2):
     cdef Husband result = Husband()
     cdef double temp = uniform()*100
-    # draw wife's parents information
+    # draw husbands's parents information
     if temp < mother0:
         result.mother_educ = 0
         result.mother_marital = 0

@@ -96,6 +96,7 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
         welfare = c.constant_welfare + c.by_kids_welfare * wife.kids + c.by_income_welfare * 0 + welfare_stigma_cost
         net_income_single_w_ue = c.ub_w + cb_const + cb_per_child*(wife.kids-1) + alimony_sum   # unemployment benefit + child benefit (minus 1 since the constant include 1 child
         net_income_single_w_ue_welfare = c.ub_w + cb_const + cb_per_child * (wife.kids - 1) + alimony_sum +welfare # unemployment benefit + child benefit (minus 1 since the constant include 1 child
+
     if wage_w_full > 0:
         welfare = c.constant_welfare + c.by_kids_welfare * wife.kids + c.by_income_welfare * wage_w_full + welfare_stigma_cost
         net_income_single_w_ef = tax.gross_to_net_single(wife.kids, wage_w_full, t) + alimony_sum
@@ -221,6 +222,9 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
                     p.alpha3_w_s * kids_utility_single_w_ef_welfare + preg_utility_um + divorce_cost_w * wife.married
             else:
                 u_wife_single[10] = float('-inf')
+        else:
+            u_wife_single[9] = float('-inf')
+            u_wife_single[10] = float('-inf')
     else:
         u_wife_single[2] = float('-inf')
         u_wife_single[3] = float('-inf')
@@ -252,7 +256,11 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
         u_wife_single[5] = float('-inf')
         u_wife_single[11] = float('-inf')
         u_wife_single[12] = float('-inf')
-    u_wife_single[6] = school_utility_w  # in school-no leisure, no income, but utility from schooling+increase future value
+    if wife.age< 31:
+        u_wife_single[6] = school_utility_w  # in school-no leisure, no income, but utility from schooling+increase future value
+    else:
+        u_wife_single[6] = float('-inf')
+
     # calculate expected utility = current utility + emax value if t<T. = current utility + terminal value if t==T
     u_wife = np.empty(13)
     if t == c.max_period - 1:
@@ -361,8 +369,8 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
         else:
             u_wife[5] = float('-inf')
             u_wife[12] = float('-inf')
-        if wife.age < 31:
-            school_index = value_to_index.schooly_to_index(wife.years_of_schooling+1)
+        if wife.age < 31 and wife.schooling < 4:
+            school_index = min(wife.schooling+1, 4)
             u_wife[6] = u_wife_single[6] + c.beta0 * w_s_emax[t+1, school_index, wife_exp_index,wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index]
         else:
             u_wife[6] = float('-inf')
@@ -376,5 +384,17 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
         ar = home_time_w_preg
     else:
         ar = home_time_w
-
-    return single_value, single_index, ar
+    if wife.age < 30:
+        #print("wife")
+        #print(np.asarray(u_wife))
+        #print(np.asarray(u_wife_single))
+        print("future value by school")
+        print(w_s_emax[t+1, 0,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        print(w_s_emax[t+1, 1,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        print(w_s_emax[t+1, 2,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        print(w_s_emax[t+1, 3,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        print(w_s_emax[t+1, 4,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+    x = np.asarray(u_wife)
+    y = np.asarray(u_wife_single)
+    wife_emax = np.subtract(x, y)
+    return single_value, single_index, ar, wife_emax

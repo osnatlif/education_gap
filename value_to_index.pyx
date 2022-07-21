@@ -25,11 +25,13 @@ cpdef int exp_to_index(double exp):   # levels grid: 0, 1-2, 3-4, 5-10, 11+
         return 4
 
 cpdef int schooly_to_index(int years_of_schooling):   # levels grid: 0, 1-2, 3-4, 5-10, 11+
-    if years_of_schooling == 12:
+    if years_of_schooling <  14:
         return 1    #hsg
     elif years_of_schooling < 15:  # 1 or 2 years
         return 2   # sc
-    elif years_of_schooling < 18:  # 3 or 5 years
+    elif years_of_schooling < 17:  # 3 or 5 years
         return 3   # cg
-    else:
+    elif years_of_schooling > 16:
         return 4  # pc
+    else:
+        assert()

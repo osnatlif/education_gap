@@ -47,7 +47,7 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
                 print("women's wage full and part")
                 print(wage_w_full)
                 print(wage_w_part)
-            single_women_value, single_women_index, single_women_ar = calculate_utility_single_women.calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
+            single_women_value, single_women_index, single_women_ar, _ = calculate_utility_single_women.calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
             if verbose:
                 print("utility of single women - value and index")
                 print(single_women_value)
@@ -56,10 +56,12 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
             if wife.get_married() == 0:    #  if not married - draw potential husband
                 if wife.get_age() < 20:
                     prob_meet_potential_partner = np.exp(p.omega_1)/(1.0+np.exp(p.omega_1))
+                elif single_women_index == 6:   #choose schooling
+                    prob_meet_potential_partner = np.exp(p.omega_2)/(1.0+np.exp(p.omega_2))
                 else:
                     temp = p.omega3 + p.omega4_w * wife.get_age() + p.omega5_w * wife.get_age() * wife.get_age()
                     prob_meet_potential_partner = np.exp(temp)/(1.0+np.exp(temp))
-                temp = np.random.normal()
+                temp = np.random.uniform()
                 if temp < prob_meet_potential_partner:
                     choose_partner = 1
                     husband = draw_husband.draw_husband_forward(wife, mother[0], mother[1], mother[2])
@@ -77,6 +79,8 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
                     print(wage_h_part)
                 u_husband, u_wife, home_time_h, home_time_w, home_time_h_preg, home_time_w_preg = calculate_utility_married.calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_part, wage_w_full, wife, husband, t)
                 single_man_value, single_man_index = calculate_utility_single_man.calculate_utility_single_man(h_s_emax, wage_h_part, wage_h_full, husband, t)
+                temp_husband = np.asarray(u_husband)
+                temp_wife = np.asarray(u_wife)
                 if verbose:
                     print("utility of single men - value and index")
                     print(single_man_value)
@@ -152,7 +156,7 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
                     m.welfare_counter_unemployed[t] += 1
 
             if wife.get_age() < 31:
-                m.school_moments_wife[t, wife.get_schooling()] += 1
+                m.school_moments_wife[t+1, wife.get_schooling()] += 1
             m.marriage_moments[t] += wife.get_married()
             m.divorce_moments[t] += wife.get_divorce()
             # print(wife)

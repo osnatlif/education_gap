@@ -51,7 +51,7 @@ cpdef update_wife_single(Wife wife, single_women_index, single_women_ar):
     wife.home_time_ar = single_women_ar
     if single_women_index == 6:   # choose to go to school
         wife.years_of_schooling = wife.years_of_schooling + 1
-        school_group = value_to_index.schooly_to_index(wife.years_of_schooling)
+        wife.schooling = value_to_index.schooly_to_index(wife.years_of_schooling)
         draw_wife.update_wife_schooling(wife)
     if single_women_index in single_women_full_time_index_array:   # choose full time employment
         wife.exp = wife.exp + 1

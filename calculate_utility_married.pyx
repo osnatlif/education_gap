@@ -204,17 +204,13 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     else:
         home_time_h_preg = float('-inf')
         home_time_w_preg = float('-inf')
-    if wife.age < 39:
-        print("home time wife without and with preg")
-        print(home_time_w_preg)
-        print(home_time_w)
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     if wife.schooling == husband. schooling:
         marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) +                randn(0, p.sigma_q)  # utility from marriage
     elif wife.schooling < husband. schooling:
         marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) + p.taste_w_up + randn(0, p.sigma_q)  # utility from marriage
     else:
-        marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) + p.taste_w_down + randn(0, 1) * p.sigma_q  # utility from marriage
+        marriage_utility = p.taste_c + p.taste_health * cmath.pow(wife.health - husband.health, 2) + p.taste_w_down + randn(0, p.sigma_q)  # utility from marriage
     marriage_cost_h = p.mc + p.mc_by_parents * husband.mother_marital
     marriage_cost_w = p.mc + p.mc_by_parents * wife.mother_marital
     # marriage options:# first index wife, second husband
@@ -576,14 +572,14 @@ cpdef tuple calculate_utility_married(double[:, :, :, :, :, :, :, :, :, :, :, :,
     #print(np.asarray(u_wife))
     #print("current utility")
     #print(np.asarray(uc_wife))
-    if husband.age < 30:
-        print("value and index of max")
-        print("period")
-        print(t)
-        print("husband total and current")
-        print(np.asarray(u_husband))
-        print(np.asarray(uc_husband))
-        print("wife total and current")
-        print(np.asarray(u_wife))
-        print(np.asarray(uc_wife))
+    #if husband.age < 30:
+    #    print("value and index of max")
+    #    print("period")
+    #    print(t)
+    #    print("husband total and current")
+    #    print(np.asarray(u_husband))
+    #    print(np.asarray(uc_husband))
+    #    print("wife total and current")
+    #    print(np.asarray(u_wife))
+    #    print(np.asarray(uc_wife))
     return u_husband,  u_wife, home_time_h, home_time_w, home_time_h_preg, home_time_w_preg

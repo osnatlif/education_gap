@@ -1,6 +1,6 @@
 # number of draws
-cdef int DRAW_B = 1
-DRAW_F = 100
+cdef int DRAW_B = 10
+DRAW_F = 1000
 cdef int cohort = 1970
 cdef int max_period = 43  # retirement
 men_full_index_array = [2, 3, 8, 9, 14, 15]

@@ -58,13 +58,14 @@ cdef class Wife:
         self.age_third_child = 0
 
     def __str__(self):
-        return "Wife\n\tSchooling: " + str(self.schooling) + "\n\tSchooling Map: " + str(self.hsd) + "," + str(self.hsg) + \
+        return "Wife\n\tyears of Schooling: " + str(self.years_of_schooling) + "\n\tSchooling: " + str(self.schooling) + "\n\tSchooling Map: " + str(self.hsd) + "," + str(self.hsg) + \
                "," + str(self.sc) + "," + str(self.cg) + "," + str(self.pc) + \
                "\n\tExperience: " + str(self.exp) + "\n\tAbility: " + str(self.ability_i) + "," + str(self.ability_value) + \
                "\n\tAge: " + str(self.age)  + "\n\tKids: " + str(self.kids)+ "\n\tage first kid: " + str(self.age_first_child) + \
-               "\n\tage second child: " + str(self.age_second_child) + "\n\tage third child: " + str(self.age_third_child) + \
+               "\tage second child: " + str(self.age_second_child) + "\tage third child: " + str(self.age_third_child) + \
                "\n\tHealth: " + str(self.health)+ \
-               "\n\tPregnant: " + str(self.preg) +"\n\tmother education: " + str(self.mother_educ) +"\n\tmother marital: " + str(self.mother_marital)
+               "\n\tPregnant: " + str(self.preg) + "\n\tmother education: " + str(self.mother_educ) + "\n\tmother marital: " + str(self.mother_marital) + \
+               "\n\tCapacity: " + str(self.capacity) + "\n\tEmployment: " + str(self.emp)
 
 
 cpdef update_wife_schooling(Wife wife):
@@ -133,7 +134,7 @@ cpdef update_ability_forward(Wife wife):
     temp_medium_ability = p.ab_medium1 + p.ab_medium2 * wife.mother_educ + p.ab_medium3 * wife.mother_marital
     prob_high_ability = temp_high_ability / (1 + temp_high_ability + temp_medium_ability)
     prob_medium_ability = temp_medium_ability / (1 + temp_high_ability + temp_medium_ability)
-    temp = randn(0, 1)
+    temp = uniform()
     if temp < prob_high_ability:
         wife.ability_i = 2
         wife.ability_value = c.normal_vector[2] * p.sigma_ability_w

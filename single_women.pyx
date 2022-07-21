@@ -6,7 +6,7 @@ cimport draw_wife
 cimport calculate_wage
 cimport libc.math as cmath
 cdef extern from "randn.c":
-    double randn(double mu, double sigma)
+    double uniform()
 from calculate_utility_single_women cimport calculate_utility_single_women
 from calculate_utility_married cimport calculate_utility_married
 from calculate_utility_single_man cimport calculate_utility_single_man
@@ -54,6 +54,8 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
     cdef draw_wife.Wife wife = draw_wife.Wife()
     wife.age = 17 + t
     # c.max_period, c.school_size, c.exp_size, c.kids_size, c.health_size, c.home_time_size, c.ability_size, c.mother_size, c.mother_size])
+    school2_arr = {}
+    school3_arr = {}
     for school in range(0, c.school_size):   # loop over school
         wife.schooling = school
         draw_wife.update_wife_schooling(wife)
@@ -77,14 +79,15 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                 for draw in range(0, c.DRAW_B):
                                     married_index = -99
                                     choose_partner = 0
-                                    wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
-                                    single_women_value, _, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
+                                    wage_w_full, wage_w_part, info = calculate_wage.calculate_wage_w(wife)
+                                    single_women_value, single_women_index, _, single_women_u = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
+
                                     if wife.age < 20:
                                         prob_meet_potential_partner = cmath.exp(p.omega_1) / (1.0 + cmath.exp(p.omega_1))
                                     else:
                                         temp = p.omega3 + p.omega4_w * wife.age + p.omega5_w * wife.age * wife.age
                                         prob_meet_potential_partner = cmath.exp(temp) / (1.0 + cmath.exp(temp))
-                                    if randn(0, 1) < prob_meet_potential_partner:
+                                    if uniform() < prob_meet_potential_partner:
                                         choose_partner = 1
                                         husband = draw_husband.draw_husband_forward(wife, mother[1], mother[2], mother[3])
                                     if choose_partner == 1:
@@ -102,10 +105,39 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                     else:
                                         sum_emax += single_women_value
                                     # print("====================== new draw ======================")
+                                    school_info = {}
+
+                                    school_info["wage_w_full"] = wage_w_full
+                                    school_info["wage_w_part"] = wage_w_part
+                                    school_info["single_women_value"] = single_women_value
+                                    school_info["single_women_index"] = single_women_index
+                                    school_info["prob_meet_potential_partner"] = prob_meet_potential_partner
+                                    school_info["single_women_u"] = np.asarray(single_women_u)
+                                    school_info["calculate_wage_info"] = info
+                                    school_info["sum_emax"] = sum_emax
+                                    school_info["wife"] = str(wife)
+                                    key = str(exp) + str(kids) + str(home_time) + str(mother_educ) + str(mother_marital)
+                                    if school == 2:
+                                        school2_arr[key] = school_info
+                                    if school == 3:
+                                        school3_arr[key] = school_info
+
                                 # end draw backward loop
+
+
                                 w_s_emax[t][school][exp][kids][wife.health][home_time][ability][mother_educ][mother_marital] = sum_emax / c.DRAW_B
                                 if verbose:
                                     print("emax(", t, ", ", school, ", ", exp,", ", kids, ",", ability, ")=", sum_emax / c.DRAW_B)
                                     print("======================================================")
+    for k in school2_arr:
+        if school3_arr[k]["sum_emax"] < school2_arr[k]["sum_emax"] and \
+            school3_arr[k]["wage_w_full"] > 0:
+            print("##########################################")
+            print(t)
+            print(k)
+            print("-----------------------")
+            print(school2_arr[k])
+            print("-----------------------")
+            print(school3_arr[k])
 
     return iter_count

@@ -153,12 +153,12 @@ cdef double sigma_h_wage = np.exp(-0.624) 	   # random shock variance matrix	hus
 cdef double sigma_q = np.exp(-0.822)	         # random shock variance matrix	match quality variance
 cdef double sigma_p = np.exp(-0.225)	         # random shock variance matrix	pregnancy
 # utility from schooling parameters
-cdef double s1_w = 550.432	   # utility from schooling - wife	s1_w constant
-cdef double s2_w = 132.469	   # utility from schooling - wife	s2_w mother is CG
-cdef double s3_w = 116.674	   # utility from schooling - wife	s3_w return for ability
-cdef double s4_w = -20.429	 # utility from schooling - wife+husband	s4_w post high school tuition
-cdef double s1_h = 350.375	   # utility from schooling - husband	s1_h constant
-cdef double s2_h = 112.582	   # utility from schooling - husband	s2_h mother is  CG
+cdef double s1_w = 75.432	   # utility from schooling - wife	s1_w constant
+cdef double s2_w = 42.469	   # utility from schooling - wife	s2_w mother is CG
+cdef double s3_w = 16.674	   # utility from schooling - wife	s3_w return for ability
+cdef double s4_w = -40.429	 # utility from schooling - wife+husband	s4_w post high school tuition
+cdef double s1_h = 70.375	   # utility from schooling - husband	s1_h constant
+cdef double s2_h = 12.582	   # utility from schooling - husband	s2_h mother is  CG
 cdef double s3_h = 16.719	   # utility from schooling - husband	s3_h return for ability
 # terminal value parameters
 cdef double t1_w = 10.918	 # terminal value - wife:	wife Education - HSG

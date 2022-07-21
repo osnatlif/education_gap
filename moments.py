@@ -47,8 +47,8 @@ def calculate_moments(m, display_moments):
                                         m.wage_moments_wife_married/m.wage_counter_wife_married,
                                         (m.emp_moments_wife_married.T/m.marriage_moments).T]
 
-    headers = ["Age", "No Kids", "1 Kid", "2 Kids", "3+ Kids", "Wage", "unemployment", "full", "part"]
-    table = tabulate(estimated_married_moments_w, headers, floatfmt=".2f", tablefmt="simple")
+    headers = ["Age", "No Kids", "1 Kid", "2 Kids", "3+ Kids", "Wage", "unemployment", "part", "full"]
+    table = tabulate(estimated_married_moments_w[8:30,:], headers, floatfmt=".2f", tablefmt="simple")
     print(" married women moments")
     print(table)
     ##################################################################################################
@@ -58,17 +58,17 @@ def calculate_moments(m, display_moments):
                                         m.welfare_moments_employed / m.welfare_counter_employed,
                                         m.welfare_moments_unemployed / m.welfare_counter_unemployed]
 
-    headers = ["Age", "No Kids", "1 Kid", "2 Kids", "3+ Kids", "Wage", "unemployment", "full", "part", "welfare-employed", "welfare-unemployed"]
-    table = tabulate(estimated_single_moments_w, headers, floatfmt=".2f", tablefmt="simple")
+    headers = ["Age", "No Kids", "1 Kid", "2 Kids", "3+ Kids", "Wage", "unemployment", "part", "full", "welfare-employed", "welfare-unemployed"]
+    table = tabulate(estimated_single_moments_w[8:30,:], headers, floatfmt=".2f", tablefmt="simple")
     print(" single women moments")
     print(table)
     ##################################################################################################
     age_arr_1970 = np.arange(17, 17+c.max_1970)
     estimated_marr_divorce_moments = np.c_[age_arr_1970, (m.marriage_moments.T[0:36] / c.DRAW_F),
-                                           (m.divorce_moments.T[0:36] / c.DRAW_F), actual.actual_marr_divorce_moments[36:72,3:5]]
+                                            (m.divorce_moments.T[0:36] / c.DRAW_F), actual.actual_marr_divorce_moments[36:72,3:5]]
 
     headers = ["Age", "marriage", "divorce", "married", "divorce" ]
-    table = tabulate(estimated_marr_divorce_moments, headers, floatfmt=".2f", tablefmt="simple")
+    table = tabulate(estimated_marr_divorce_moments[8:30,:], headers, floatfmt=".2f", tablefmt="simple")
     print("           Fitted         ", "            Actual    ")
     print(table)
     ###################################################################################################

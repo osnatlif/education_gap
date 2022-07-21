@@ -182,8 +182,8 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
         else:
             u_husband[4] = float('-inf')
         u_husband[5] = float('-inf')
-        if husband.age < 31:
-            school_index = schooly_to_index(husband.years_of_schooling+1)
+        if husband.age < 31 and husband.schooling < 4:
+            school_index = min(husband.schooling+1,4)
             u_husband[6] = u_husband_single[6] + c.beta0 * h_s_emax[t+1, school_index, husband_exp_index, husband.kids, husband.health, husband_home_time_index,husband_ability_index, husband_mother_educ_index, husband_mother_marital_index]
         else:
             u_husband[6] = float('-inf')
