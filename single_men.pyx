@@ -88,9 +88,9 @@ cdef int single_men(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :, :
                                         choose_partner = 1
                                         wife = draw_wife.draw_wife(husband, mother[0], mother[1], mother[2])
                                     if choose_partner == 1:
-                                        wage_w_full, wage_w_part, _ = calculate_wage.calculate_wage_w(wife)
+                                        wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
                                         u_husband, u_wife, _, _, _, _ = calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_part, wage_w_full, wife, husband, t)
-                                        single_women_value, _, _, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
+                                        single_women_value, _, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
                                         weighted_utility = float('-inf')
                                         for i in range(0, 18):
                                             if u_wife[i] > single_women_value and u_husband[i] > single_men_value:

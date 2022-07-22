@@ -42,12 +42,12 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
         for t in range(0, c.max_period_f):
             if verbose:
                 print("========= ", wife.age, " =========")
-            wage_w_full, wage_w_part, _ = calculate_wage.calculate_wage_w(wife)
+            wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
             if verbose:
                 print("women's wage full and part")
                 print(wage_w_full)
                 print(wage_w_part)
-            single_women_value, single_women_index, single_women_ar, _ = calculate_utility_single_women.calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
+            single_women_value, single_women_index, single_women_ar = calculate_utility_single_women.calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
             if verbose:
                 print("utility of single women - value and index")
                 print(single_women_value)

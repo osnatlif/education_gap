@@ -77,8 +77,8 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                 for draw in range(0, c.DRAW_B):
                                     married_index = -99
                                     choose_partner = 0
-                                    wage_w_full, wage_w_part, info = calculate_wage.calculate_wage_w(wife)
-                                    single_women_value, single_women_index, _, single_women_u = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
+                                    wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
+                                    single_women_value, single_women_index, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
 
                                     if wife.age < 20:
                                         prob_meet_potential_partner = cmath.exp(p.omega_1) / (1.0 + cmath.exp(p.omega_1))
@@ -102,41 +102,11 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                         sum_emax += prob_meet_potential_partner * u_wife[married_index] +(1-prob_meet_potential_partner)*single_women_value
                                     else:
                                         sum_emax += single_women_value
-                                    # print("====================== new draw ======================")
-                                    school_info = {}
-
-                                    school_info["wage_w_full"] = wage_w_full
-                                    school_info["wage_w_part"] = wage_w_part
-                                    school_info["single_women_value"] = single_women_value
-                                    school_info["single_women_index"] = single_women_index
-                                    school_info["prob_meet_potential_partner"] = prob_meet_potential_partner
-                                    school_info["single_women_u"] = np.asarray(single_women_u)
-                                    school_info["calculate_wage_info"] = info
-                                    school_info["sum_emax"] = sum_emax
-                                    school_info["wife"] = str(wife)
-                                    key = str(exp) + "" + str(kids) + "" + str(home_time) + "" + str(mother_educ) + "" + str(mother_marital)
-                                    #if single_women_index == 6 and school > 0:
-                                    #    print("##########################################")
-                                    #    print(t)
-                                    #    print(key)
-                                    #    print(school_info)
-
                                 # end draw backward loop
-
 
                                 w_s_emax[t][school][exp][kids][wife.health][home_time][ability][mother_educ][mother_marital] = sum_emax / c.DRAW_B
                                 if verbose:
                                     print("emax(", t, ", ", school, ", ", exp,", ", kids, ",", ability, ")=", sum_emax / c.DRAW_B)
                                     print("======================================================")
-    #for k in school2_arr:
-        #if school3_arr[k]["sum_emax"] < school2_arr[k]["sum_emax"] and \
-            #school3_arr[k]["wage_w_full"] > 0:
-            #print("##########################################")
-            #print(t)
-            #print(k)
-            #print("-----------------------")
-            #print(school2_arr[k])
-            #print("-----------------------")
-            #print(school3_arr[k])
 
     return iter_count

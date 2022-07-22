@@ -79,14 +79,8 @@ cpdef tuple calculate_wage_w(Wife wife):
             else:
                 assert(wife.capacity == 0.5)
                 wage_part = 0.5 * cmath.exp(tmp1 + tmp2)
-    info = {}
-    info["prob_full_w"] = prob_full_w
-    info["prob_part_w"] = prob_part_w
-    info["prob_not_laid_off_w"] = prob_not_laid_off_w
-    info["tmp1"] = tmp1
-    info["tmp2"] = tmp2
 
-    return wage_full, wage_part, info
+    return wage_full, wage_part
 
 ##############################################################################333
 cpdef tuple calculate_wage_h(Husband husband):

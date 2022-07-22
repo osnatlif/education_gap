@@ -89,9 +89,9 @@ cpdef int married_couple_emax(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, 
                                                             print(husband)
                                                         for draw in range(0, c.DRAW_B):
                                                             married_index = -99
-                                                            wage_w_full, wage_w_part, _ = calculate_wage.calculate_wage_w(wife)
+                                                            wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
                                                             wage_h_full, wage_h_part = calculate_wage.calculate_wage_h(husband)
-                                                            single_women_value, _, _, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
+                                                            single_women_value, _, _ = calculate_utility_single_women(w_s_emax, wage_w_part, wage_w_full, wife, t)
                                                             single_man_value, _ = calculate_utility_single_man(h_s_emax, wage_h_part, wage_h_full, husband, t)
                                                             u_husband, u_wife, _, _, _, _ = calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_part, wage_w_full, wife, husband, t)
                                                             weighted_utility = float('-inf')
