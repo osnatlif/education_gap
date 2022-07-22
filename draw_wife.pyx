@@ -9,7 +9,6 @@ from draw_husband cimport Husband
 
 # wives = np.loadtxt("wives.out")
 
-
 cdef class Wife:
     def get_age(self):
         return self.age

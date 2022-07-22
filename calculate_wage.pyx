@@ -20,13 +20,19 @@ cpdef tuple calculate_wage_w(Wife wife):
     cdef double tmp2 = 0
     cdef double prob_not_laid_off_tmp
     cdef double prob_not_laid_off_w
-    if wife.emp == c.UNEMP:   # didn't worked in previous period
+    cdef int full_time_offer = 0
+    cdef int part_time_offer = 0
+    if wife.emp == c.UNEMP:   # didn't work in previous period
         # draw job offer
         prob_full_tmp = p.lambda0_w_ft + p.lambda1_w_ft*wife.exp + p.lambda2_w_ft*wife.schooling
         prob_part_tmp = p.lambda0_w_pt + p.lambda1_w_pt*wife.exp + p.lambda2_w_pt*wife.schooling
         prob_full_w = cmath.exp(prob_full_tmp)/(1+cmath.exp(prob_full_tmp))
         prob_part_w = cmath.exp(prob_part_tmp)/(1+cmath.exp(prob_part_tmp))
         if uniform() < prob_full_w:   # got full time job offer - draw wage for full time
+            full_time_offer = 1
+        if uniform() < prob_part_w:
+            part_time_offer = 1
+        if full_time_offer or part_time_offer:
             tmp1 = wife.ability_value + \
                    p.beta11_w * wife.exp * wife.hsd + \
                    p.beta12_w * wife.exp * wife.hsg + \
@@ -39,25 +45,13 @@ cpdef tuple calculate_wage_w(Wife wife):
                    p.beta24_w * cmath.pow(wife.exp * wife.cg, 2) + \
                    p.beta25_w * cmath.pow(wife.exp * wife.pc, 2) + \
                    p.beta31_w * wife.hsd + p.beta32_w * wife.hsg + p.beta33_w * wife.sc + p.beta34_w * wife.cg + p.beta35_w * wife.pc
-            tmp2 = randn(0, p.sigma_w_wage)
-            wage_full = cmath.exp(tmp1 + tmp2)
-        if uniform() < prob_part_w:
-            # draw wage for full time - will be multiply by 0.5 if part time job
-            tmp1 = wife.ability_value + \
-                   p.beta11_w * wife.exp * wife.hsd + \
-                   p.beta12_w * wife.exp * wife.hsg + \
-                   p.beta13_w * wife.exp * wife.sc + \
-                   p.beta14_w * wife.exp * wife.cg + \
-                   p.beta15_w * wife.exp * wife.pc + \
-                   p.beta21_w * cmath.pow(wife.exp * wife.hsd, 2) + \
-                   p.beta22_w * cmath.pow(wife.exp * wife.hsg, 2 )+ \
-                   p.beta23_w * cmath.pow(wife.exp * wife.sc, 2) + \
-                   p.beta24_w * cmath.pow(wife.exp * wife.cg, 2) + \
-                   p.beta25_w * cmath.pow(wife.exp * wife.pc, 2) + \
-                   p.beta31_w * wife.hsd + p.beta32_w * wife.hsg + p.beta33_w * wife.sc + p.beta34_w * wife.cg + p.beta35_w * wife.pc
-            tmp2 = randn(0, p.sigma_w_wage)
-            wage_part = 0.5 * cmath.exp(tmp1 + tmp2)
-    else:   #    wife.emp == 1 - worked in previous period
+            if full_time_offer:
+                tmp2 = randn(0, p.sigma_w_wage)
+                wage_full = cmath.exp(tmp1 + tmp2)
+            if part_time_offer:
+                # draw wage for full time - will be multiply by 0.5 if part time job
+                wage_part = 0.5 * cmath.exp(tmp1 + tmp2)
+    else:   #    wife.emp == c.EMP - worked in previous period
         prob_not_laid_off_tmp = p.lambda0_w_f + p.lambda1_w_f*wife.exp + p.lambda2_w_f*wife.schooling
         prob_not_laid_off_w = cmath.exp(prob_not_laid_off_tmp)/(1+ cmath.exp(prob_not_laid_off_tmp))
         if uniform()  < prob_not_laid_off_w:
@@ -67,7 +61,7 @@ cpdef tuple calculate_wage_w(Wife wife):
                    p.beta13_w * wife.exp * wife.sc + \
                    p.beta14_w * wife.exp * wife.cg + \
                    p.beta15_w * wife.exp * wife.pc + \
-                   p.beta21_w * cmath.pow(wife.exp * wife.hsd,  2) + \
+                   p.beta21_w * cmath.pow(wife.exp * wife.hsd, 2) + \
                    p.beta22_w * cmath.pow(wife.exp * wife.hsg, 2) + \
                    p.beta23_w * cmath.pow(wife.exp * wife.sc, 2) + \
                    p.beta24_w * cmath.pow(wife.exp * wife.cg, 2) + \
