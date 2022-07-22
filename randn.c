@@ -42,7 +42,7 @@ uniform ()
 
 int argmax(double arr[], int len) {
     double max = -INFINITY;
-    int max_index;
+    int max_index = 0;
     while (len > 0) {
         const double value = arr[len-1];
         if (max < value) {

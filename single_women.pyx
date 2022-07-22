@@ -88,7 +88,7 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                         prob_meet_potential_partner = cmath.exp(temp) / (1.0 + cmath.exp(temp))
                                     if uniform() < prob_meet_potential_partner:
                                         choose_partner = 1
-                                        husband = draw_husband.draw_husband_forward(wife, mother[1], mother[2], mother[3])
+                                        husband = draw_husband.draw_husband_forward(wife, mother[0], mother[1], mother[2])
                                     if choose_partner == 1:
                                         wage_h_full, wage_h_part = calculate_wage.calculate_wage_h(husband)
                                         u_husband, u_wife, _, _, _, _ = calculate_utility_married(w_emax, h_emax, wage_h_part, wage_h_full, wage_w_part, wage_w_full, wife, husband, t)

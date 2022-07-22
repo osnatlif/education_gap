@@ -71,7 +71,7 @@ cdef double gross_to_net_single(int kids, double wage, int t):
     cdef double tax
     cdef double eict
     cdef double reduced_income
-    cdef int year_row
+    cdef int year_row = 0
     cdef double deductions_s
     cdef double exemptions_s
     if c.cohort == 1960:
@@ -101,7 +101,7 @@ cdef double gross_to_net_single(int kids, double wage, int t):
 cdef double gross_to_net_married(int kids, double wage_w, double wage_h, int t):
     cdef double tax = 0.0
     cdef double eict
-    cdef int year_row
+    cdef int year_row = 0
     cdef double reduced_income
     cdef double tot_income
     cdef double deductions_m
