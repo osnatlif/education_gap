@@ -7,6 +7,7 @@ from value_to_index cimport ability_to_index
 cimport libc.math as cmath
 cdef extern from "randn.c":
     double randn(double mu, double sigma)
+    int argmax(double arr[], int len)
 cimport gross_to_net as tax
 cimport constant_parameters as c
 from draw_husband cimport Husband
@@ -190,7 +191,7 @@ cpdef tuple calculate_utility_single_man(double[:,:,:,:,:,:,:,:,:] h_s_emax, dou
     else:
         assert()
     ###################################################################################
-    single_value = max(u_husband)
-    single_index = np.argmax(u_husband)
+    single_index = argmax(u_husband, 7)
+    single_value = u_husband[single_index]
 
     return single_value, single_index

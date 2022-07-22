@@ -7,6 +7,7 @@ cimport libc.math as cmath
 cdef extern from "randn.c":
     double randn(double mu, double sigma)
     double uniform()
+    int argmax(double arr[], int len)
 from draw_wife cimport Wife
 from value_to_index cimport ability_to_index
 from value_to_index cimport exp_to_index
@@ -381,8 +382,8 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
     else:
         assert()
     ###################################################################################
-    single_value = max(u_wife)
-    single_index = np.argmax(u_wife)
+    single_index = argmax(u_wife, 13)
+    single_value = u_wife[single_index]
     # single_women_pregnancy_index_array = [1, 3, 5, 8, 10, 12]
     if single_index==1 or single_index==3 or single_index==5 or single_index==8 or single_index==10 or single_index==12:
         ar = home_time_w_preg

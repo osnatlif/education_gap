@@ -39,3 +39,17 @@ uniform ()
 {
     return (double)rand() / (double)RAND_MAX;
 }
+
+int argmax(double arr[], int len) {
+    double max = -INFINITY;
+    int max_index;
+    while (len > 0) {
+        const double value = arr[len-1];
+        if (max < value) {
+            max = value;
+            max_index = len-1;
+        }
+        len--;
+    }
+    return max_index;
+}
