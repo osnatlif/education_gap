@@ -42,7 +42,7 @@ def forward_simulation(w_emax, h_emax, w_s_emax, h_s_emax, verbose, display_mome
         for t in range(0, c.max_period_f):
             if verbose:
                 print("========= ", wife.age, " =========")
-            wage_w_full, wage_w_part = calculate_wage.calculate_wage_w(wife)
+            wage_w_full, wage_w_part, _ = calculate_wage.calculate_wage_w(wife)
             if verbose:
                 print("women's wage full and part")
                 print(wage_w_full)

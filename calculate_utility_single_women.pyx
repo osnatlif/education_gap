@@ -384,17 +384,17 @@ cpdef tuple calculate_utility_single_women(double[:,:,:,:,:,:,:,:,:] w_s_emax,
         ar = home_time_w_preg
     else:
         ar = home_time_w
-    if wife.age < 30:
+    #if wife.age < 30 and wife.schooling > 1:
         #print("wife")
         #print(np.asarray(u_wife))
         #print(np.asarray(u_wife_single))
-        print("future value by school")
-        print(w_s_emax[t+1, 0,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
-        print(w_s_emax[t+1, 1,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
-        print(w_s_emax[t+1, 2,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
-        print(w_s_emax[t+1, 3,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
-        print(w_s_emax[t+1, 4,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        #print("future value by school")
+        #print(w_s_emax[t+1, 0,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        #print(w_s_emax[t+1, 1,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        #print(w_s_emax[t+1, 2,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        #print(w_s_emax[t+1, 3,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
+        #print(w_s_emax[t+1, 4,   wife_exp_index, wife.kids, wife.health, wife_home_time_index,wife_ability_index, wife_mother_educ_index, wife_mother_marital_index])
     x = np.asarray(u_wife)
     y = np.asarray(u_wife_single)
     wife_emax = np.subtract(x, y)
-    return single_value, single_index, ar, wife_emax
+    return single_value, single_index, ar, u_wife_single

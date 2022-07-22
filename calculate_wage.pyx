@@ -6,7 +6,7 @@ cdef extern from "randn.c":
 from parameters import p
 from draw_husband cimport Husband
 from draw_wife cimport Wife
-import numpy as np
+
 
 cpdef tuple calculate_wage_w(Wife wife):
     # this function calculates wives actual wage
@@ -33,11 +33,11 @@ cpdef tuple calculate_wage_w(Wife wife):
                    p.beta13_w * wife.exp * wife.sc + \
                    p.beta14_w * wife.exp * wife.cg + \
                    p.beta15_w * wife.exp * wife.pc + \
-                   p.beta21_w * (wife.exp * wife.hsd) ** 2 + \
-                   p.beta22_w * (wife.exp * wife.hsg) ** 2 + \
-                   p.beta23_w * (wife.exp * wife.sc) ** 2 + \
-                   p.beta24_w * (wife.exp * wife.cg) ** 2 + \
-                   p.beta25_w * (wife.exp * wife.pc) ** 2 + \
+                   p.beta21_w * cmath.pow(wife.exp * wife.hsd, 2) + \
+                   p.beta22_w * cmath.pow(wife.exp * wife.hsg, 2) + \
+                   p.beta23_w * cmath.pow(wife.exp * wife.sc, 2) + \
+                   p.beta24_w * cmath.pow(wife.exp * wife.cg, 2) + \
+                   p.beta25_w * cmath.pow(wife.exp * wife.pc, 2) + \
                    p.beta31_w * wife.hsd + p.beta32_w * wife.hsg + p.beta33_w * wife.sc + p.beta34_w * wife.cg + p.beta35_w * wife.pc
             tmp2 = randn(0, p.sigma_w_wage)
             wage_full = cmath.exp(tmp1 + tmp2)
@@ -49,11 +49,11 @@ cpdef tuple calculate_wage_w(Wife wife):
                    p.beta13_w * wife.exp * wife.sc + \
                    p.beta14_w * wife.exp * wife.cg + \
                    p.beta15_w * wife.exp * wife.pc + \
-                   p.beta21_w * (wife.exp * wife.hsd) ** 2 + \
-                   p.beta22_w * (wife.exp * wife.hsg) ** 2 + \
-                   p.beta23_w * (wife.exp * wife.sc) ** 2 + \
-                   p.beta24_w * (wife.exp * wife.cg) ** 2 + \
-                   p.beta25_w * (wife.exp * wife.pc) ** 2 + \
+                   p.beta21_w * cmath.pow(wife.exp * wife.hsd, 2) + \
+                   p.beta22_w * cmath.pow(wife.exp * wife.hsg, 2 )+ \
+                   p.beta23_w * cmath.pow(wife.exp * wife.sc, 2) + \
+                   p.beta24_w * cmath.pow(wife.exp * wife.cg, 2) + \
+                   p.beta25_w * cmath.pow(wife.exp * wife.pc, 2) + \
                    p.beta31_w * wife.hsd + p.beta32_w * wife.hsg + p.beta33_w * wife.sc + p.beta34_w * wife.cg + p.beta35_w * wife.pc
             tmp2 = randn(0, p.sigma_w_wage)
             wage_part = 0.5 * cmath.exp(tmp1 + tmp2)
@@ -67,11 +67,11 @@ cpdef tuple calculate_wage_w(Wife wife):
                    p.beta13_w * wife.exp * wife.sc + \
                    p.beta14_w * wife.exp * wife.cg + \
                    p.beta15_w * wife.exp * wife.pc + \
-                   p.beta21_w * (wife.exp * wife.hsd) ** 2 + \
-                   p.beta22_w * (wife.exp * wife.hsg) ** 2 + \
-                   p.beta23_w * (wife.exp * wife.sc) ** 2 + \
-                   p.beta24_w * (wife.exp * wife.cg) ** 2 + \
-                   p.beta25_w * (wife.exp * wife.pc) ** 2 + \
+                   p.beta21_w * cmath.pow(wife.exp * wife.hsd,  2) + \
+                   p.beta22_w * cmath.pow(wife.exp * wife.hsg, 2) + \
+                   p.beta23_w * cmath.pow(wife.exp * wife.sc, 2) + \
+                   p.beta24_w * cmath.pow(wife.exp * wife.cg, 2) + \
+                   p.beta25_w * cmath.pow(wife.exp * wife.pc, 2) + \
                    p.beta31_w * wife.hsd + p.beta32_w * wife.hsg + p.beta33_w * wife.sc + p.beta34_w * wife.cg + p.beta35_w * wife.pc
             tmp2 = randn(0, p.sigma_w_wage)
             if wife.capacity == 1:  # worked in previous period full time
@@ -111,15 +111,23 @@ cpdef tuple calculate_wage_h(Husband husband):
         temp = uniform()
         if temp  < prob_full_h:  # w_draws = rand(DRAW_F,T,2)  1 - health,2 -job offer,
             # draw wage for full time
-            tmp1 =  husband.ability_value + p.beta11_h *  husband.exp *  husband.hsd + p.beta12_h *  husband.exp *  husband.hsg + p.beta13_h *  husband.exp * husband.sc + p.beta14_h * husband.exp * husband.cg + p.beta15_h * husband.exp * husband.pc \
-                    + p.beta21_h * ( husband.exp *  husband.hsd) ** 2+ p.beta22_h * ( husband.exp *  husband.hsg) ** 2 + p.beta23_h * ( husband.exp *  husband.sc) ** 2 + p.beta24_h * (husband.exp * husband.cg) ** 2 + p.beta25_h * (husband.exp * husband.pc) ** 2 \
-                    + p.beta31_h *  husband.hsd + p.beta32_h *  husband.hsg + p.beta33_h *  husband.sc + p.beta34_h *  husband.cg + p.beta35_h *  husband.pc
+            tmp1 =  husband.ability_value + p.beta11_h *  husband.exp *  husband.hsd + p.beta12_h *  husband.exp *  husband.hsg + p.beta13_h *  husband.exp * husband.sc + p.beta14_h * husband.exp * husband.cg + p.beta15_h * husband.exp * husband.pc + \
+                    p.beta21_h * cmath.pow( husband.exp *  husband.hsd, 2) +\
+                    p.beta22_h * cmath.pow( husband.exp *  husband.hsg, 2) + \
+                    p.beta23_h * cmath.pow( husband.exp *  husband.sc, 2) + \
+                    p.beta24_h * cmath.pow(husband.exp * husband.cg, 2) + \
+                    p.beta25_h * cmath.pow(husband.exp * husband.pc, 2) + \
+                    p.beta31_h *  husband.hsd + p.beta32_h *  husband.hsg + p.beta33_h *  husband.sc + p.beta34_h *  husband.cg + p.beta35_h *  husband.pc
             tmp2 = randn(0, p.sigma_h_wage)
             wage_full = cmath.exp(tmp1 + tmp2)
         if uniform()  < prob_part_h:
             # draw wage for full time - will be multiply by 0.5 if part time job
-            tmp1 = husband.ability_value + p.beta11_h * husband.exp * husband.hsd + p.beta12_h * husband.exp * husband.hsg + p.beta13_h * husband.exp * husband.sc + p.beta14_h * husband.exp * husband.cg + p.beta15_h * husband.exp * husband.pc \
-                   + p.beta21_h * (husband.exp * husband.hsd) ** 2 + p.beta22_h * (husband.exp * husband.hsg) ** 2 + p.beta23_h * (husband.exp * husband.sc) ** 2 + p.beta24_h * (husband.exp * husband.cg) ** 2 + p.beta25_h * (husband.exp * husband.pc) ** 2 \
+            tmp1 = husband.ability_value + p.beta11_h * husband.exp * husband.hsd + p.beta12_h * husband.exp * husband.hsg + p.beta13_h * husband.exp * husband.sc + p.beta14_h * husband.exp * husband.cg + p.beta15_h * husband.exp * husband.pc +\
+                   p.beta21_h * cmath.pow(husband.exp * husband.hsd, 2) + \
+                   p.beta22_h * cmath.pow(husband.exp * husband.hsg, 2) + \
+                   p.beta23_h * cmath.pow(husband.exp * husband.sc, 2) + \
+                   p.beta24_h * cmath.pow(husband.exp * husband.cg, 2) + \
+                   p.beta25_h * cmath.pow(husband.exp * husband.pc, 2) \
                    + p.beta31_h * husband.hsd + p.beta32_h * husband.hsg + p.beta33_h * husband.sc + p.beta34_h * husband.cg + p.beta35_h * husband.pc
             tmp2 = randn(0, p.sigma_h_wage)
             wage_part = 0.5 * cmath.exp(tmp1 + tmp2)
@@ -127,8 +135,12 @@ cpdef tuple calculate_wage_h(Husband husband):
         prob_not_laid_off_tmp = p.lambda0_h_f + p.lambda1_h_f * husband.exp + p.lambda2_h_f *  husband.schooling
         prob_not_laid_off_h = cmath.exp(prob_not_laid_off_tmp) / (1 + cmath.exp(prob_not_laid_off_tmp))
         if uniform()  < prob_not_laid_off_h:
-            tmp1 = husband.ability_value + p.beta11_h * husband.exp * husband.hsd + p.beta12_h * husband.exp * husband.hsg + p.beta13_h * husband.exp * husband.sc + p.beta14_h * husband.exp * husband.cg + p.beta15_h * husband.exp * husband.pc \
-                   + p.beta21_h * (husband.exp * husband.hsd) ** 2 + p.beta22_h * (                   husband.exp * husband.hsg) ** 2 + p.beta23_h * (husband.exp * husband.sc) ** 2 + p.beta24_h * (husband.exp * husband.cg) ** 2 + p.beta25_h * (husband.exp * husband.pc) ** 2 \
+            tmp1 = husband.ability_value + p.beta11_h * husband.exp * husband.hsd + p.beta12_h * husband.exp * husband.hsg + p.beta13_h * husband.exp * husband.sc + p.beta14_h * husband.exp * husband.cg + p.beta15_h * husband.exp * husband.pc + \
+                   p.beta21_h * cmath.pow(husband.exp * husband.hsd, 2) + \
+                   p.beta22_h * cmath.pow(husband.exp * husband.hsg, 2) + \
+                   p.beta23_h * cmath.pow(husband.exp * husband.sc, 2) + \
+                   p.beta24_h * cmath.pow(husband.exp * husband.cg, 2) + \
+                   p.beta25_h * cmath.pow(husband.exp * husband.pc, 2) \
                    + p.beta31_h * husband.hsd + p.beta32_h * husband.hsg + p.beta33_h * husband.sc + p.beta34_h * husband.cg + p.beta35_h * husband.pc
             tmp2 = randn(0, p.sigma_h_wage)
             if husband.capacity == 1:  # worked in previous period full time

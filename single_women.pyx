@@ -54,8 +54,6 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
     cdef draw_wife.Wife wife = draw_wife.Wife()
     wife.age = 17 + t
     # c.max_period, c.school_size, c.exp_size, c.kids_size, c.health_size, c.home_time_size, c.ability_size, c.mother_size, c.mother_size])
-    school2_arr = {}
-    school3_arr = {}
     for school in range(0, c.school_size):   # loop over school
         wife.schooling = school
         draw_wife.update_wife_schooling(wife)
@@ -101,7 +99,7 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                                     weighted_utility = c.bp * u_wife[i] + (1 - c.bp) * u_husband[i]
                                                     married_index = i
                                     if married_index > -99:
-                                        sum_emax += u_wife[married_index]
+                                        sum_emax += prob_meet_potential_partner * u_wife[married_index] +(1-prob_meet_potential_partner)*single_women_value
                                     else:
                                         sum_emax += single_women_value
                                     # print("====================== new draw ======================")
@@ -116,11 +114,12 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                     school_info["calculate_wage_info"] = info
                                     school_info["sum_emax"] = sum_emax
                                     school_info["wife"] = str(wife)
-                                    key = str(exp) + str(kids) + str(home_time) + str(mother_educ) + str(mother_marital)
-                                    if school == 2:
-                                        school2_arr[key] = school_info
-                                    if school == 3:
-                                        school3_arr[key] = school_info
+                                    key = str(exp) + "" + str(kids) + "" + str(home_time) + "" + str(mother_educ) + "" + str(mother_marital)
+                                    #if single_women_index == 6 and school > 0:
+                                    #    print("##########################################")
+                                    #    print(t)
+                                    #    print(key)
+                                    #    print(school_info)
 
                                 # end draw backward loop
 
@@ -129,15 +128,15 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
                                 if verbose:
                                     print("emax(", t, ", ", school, ", ", exp,", ", kids, ",", ability, ")=", sum_emax / c.DRAW_B)
                                     print("======================================================")
-    for k in school2_arr:
-        if school3_arr[k]["sum_emax"] < school2_arr[k]["sum_emax"] and \
-            school3_arr[k]["wage_w_full"] > 0:
-            print("##########################################")
-            print(t)
-            print(k)
-            print("-----------------------")
-            print(school2_arr[k])
-            print("-----------------------")
-            print(school3_arr[k])
+    #for k in school2_arr:
+        #if school3_arr[k]["sum_emax"] < school2_arr[k]["sum_emax"] and \
+            #school3_arr[k]["wage_w_full"] > 0:
+            #print("##########################################")
+            #print(t)
+            #print(k)
+            #print("-----------------------")
+            #print(school2_arr[k])
+            #print("-----------------------")
+            #print(school3_arr[k])
 
     return iter_count

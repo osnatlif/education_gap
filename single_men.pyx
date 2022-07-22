@@ -98,7 +98,7 @@ cdef int single_men(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :, :
                                                     weighted_utility = c.bp * u_wife[i] + (1 - c.bp) * u_husband[i]
                                                     married_index = i
                                     if married_index > -99:
-                                        sum_emax += u_husband[married_index]
+                                        sum_emax += prob_meet_potential_partner * u_husband[married_index] + (1-prob_meet_potential_partner) * single_men_value
                                     else:
                                         sum_emax += single_men_value
                                     # print("====================== new draw ======================")

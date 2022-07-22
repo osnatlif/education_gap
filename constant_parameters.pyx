@@ -1,5 +1,5 @@
 # number of draws
-cdef int DRAW_B = 10
+cdef int DRAW_B = 1
 DRAW_F = 1000
 cdef int cohort = 1970
 cdef int max_period = 43  # retirement
