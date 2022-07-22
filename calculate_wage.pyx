@@ -39,11 +39,11 @@ cpdef tuple calculate_wage_w(Wife wife):
                    p.beta13_w * wife.exp * wife.sc + \
                    p.beta14_w * wife.exp * wife.cg + \
                    p.beta15_w * wife.exp * wife.pc + \
-                   p.beta21_w * cmath.pow(wife.exp * wife.hsd, 2) + \
-                   p.beta22_w * cmath.pow(wife.exp * wife.hsg, 2) + \
-                   p.beta23_w * cmath.pow(wife.exp * wife.sc, 2) + \
-                   p.beta24_w * cmath.pow(wife.exp * wife.cg, 2) + \
-                   p.beta25_w * cmath.pow(wife.exp * wife.pc, 2) + \
+                   p.beta21_w * wife.exp_2 * wife.hsd + \
+                   p.beta22_w * wife.exp_2 * wife.hsg + \
+                   p.beta23_w * wife.exp_2 * wife.sc + \
+                   p.beta24_w * wife.exp_2 * wife.cg + \
+                   p.beta25_w * wife.exp_2 * wife.pc + \
                    p.beta31_w * wife.hsd + p.beta32_w * wife.hsg + p.beta33_w * wife.sc + p.beta34_w * wife.cg + p.beta35_w * wife.pc
             if full_time_offer:
                 tmp2 = randn(0, p.sigma_w_wage)
@@ -61,11 +61,11 @@ cpdef tuple calculate_wage_w(Wife wife):
                    p.beta13_w * wife.exp * wife.sc + \
                    p.beta14_w * wife.exp * wife.cg + \
                    p.beta15_w * wife.exp * wife.pc + \
-                   p.beta21_w * cmath.pow(wife.exp * wife.hsd, 2) + \
-                   p.beta22_w * cmath.pow(wife.exp * wife.hsg, 2) + \
-                   p.beta23_w * cmath.pow(wife.exp * wife.sc, 2) + \
-                   p.beta24_w * cmath.pow(wife.exp * wife.cg, 2) + \
-                   p.beta25_w * cmath.pow(wife.exp * wife.pc, 2) + \
+                   p.beta21_w * wife.exp_2 * wife.hsd + \
+                   p.beta22_w * wife.exp_2 * wife.hsg + \
+                   p.beta23_w * wife.exp_2 * wife.sc + \
+                   p.beta24_w * wife.exp_2 * wife.cg + \
+                   p.beta25_w * wife.exp_2 * wife.pc + \
                    p.beta31_w * wife.hsd + p.beta32_w * wife.hsg + p.beta33_w * wife.sc + p.beta34_w * wife.cg + p.beta35_w * wife.pc
             tmp2 = randn(0, p.sigma_w_wage)
             if wife.capacity == 1:  # worked in previous period full time

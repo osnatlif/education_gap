@@ -36,7 +36,8 @@ cdef class Wife:
         self.schooling = 0    # wife schooling, can get values of 0-4
         self.years_of_schooling = 11
         self.exp = 0    # wife experience
-        self.emp = 0  # wife employment state !!!
+        self.exp_2 = 0  # wife experience aquared
+        self.emp = 0    # wife employment state !!!
         self.capacity = 0
         self.married = 0
         self.divorce = 0

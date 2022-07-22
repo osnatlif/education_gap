@@ -59,6 +59,7 @@ cdef int single_women(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, :, :, :,
         draw_wife.update_wife_schooling(wife)
         for exp in range(0, c.exp_size):           # loop over experience
             wife.exp = c.exp_vector[exp]
+            wife.exp_2 = cmath.pow(wife.exp, 2)
             for kids in range(0, 4):                # for each number of kids: 0, 1, 2,  - open loop of kids
                 wife.kids = kids
                 for home_time in range(0, c.home_time_size):       # home time loop - three options

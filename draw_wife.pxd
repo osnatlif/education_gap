@@ -9,8 +9,9 @@ cdef class Wife:
     cdef int pc
     cdef int schooling              # wife schooling, can get values of 0-4
     cdef int years_of_schooling
-    cdef double exp                        # wife experience
-    cdef int emp                                # wife employment state
+    cdef double exp                 # wife experience
+    cdef double exp_2               # wife experience squared
+    cdef int emp                    # wife employment state
     cdef double capacity
     cdef int married
     cdef int divorce

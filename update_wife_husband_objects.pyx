@@ -5,6 +5,7 @@ from draw_wife cimport Wife
 from draw_husband cimport Husband
 cimport draw_wife
 cimport value_to_index
+cimport libc.math as cmath
 # single options:
 #            0-single + unemployed + non-pregnant
 #                        1-single + unemployed + pregnant - zero for men
@@ -55,10 +56,12 @@ cpdef update_wife_single(Wife wife, single_women_index, single_women_ar):
         draw_wife.update_wife_schooling(wife)
     if single_women_index in single_women_full_time_index_array:   # choose full time employment
         wife.exp = wife.exp + 1
+        wife.exp_2 = cmath.pow(wife.exp, 2)
         wife.emp = 1
         wife.capacity = 1
     elif single_women_index in single_women_part_time_index_array:   # choose part-time employment
         wife.exp = wife.exp + 0.5
+        wife.exp_2 = cmath.pow(wife.exp, 2)
         wife.emp = 1
         wife.capacity = 0.5
     else:
@@ -112,10 +115,12 @@ cpdef update_married(Husband husband, Wife wife, married_index, home_time_h, hom
         wife.emp = 1
         wife.capacity = 1
         wife.exp = wife.exp + 1
+        wife.exp_2 = cmath.pow(wife.exp, 2)
     elif married_index < 18:
         wife.emp = 1
         wife.capacity = 0.5
         wife.exp = wife.exp + 0.5
+        wife.exp_2 = cmath.pow(wife.exp, 2)
     else:
         assert()
     # update employment status husband

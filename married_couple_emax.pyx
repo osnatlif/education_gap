@@ -4,6 +4,7 @@ cimport constant_parameters as c
 cimport draw_husband
 cimport draw_wife
 cimport calculate_wage
+cimport libc.math as cmath
 from calculate_utility_single_women cimport calculate_utility_single_women
 from calculate_utility_married cimport calculate_utility_married
 from calculate_utility_single_man cimport calculate_utility_single_man
@@ -59,6 +60,7 @@ cpdef int married_couple_emax(int t, double[:, :, :, :, :, :, :, :, :, :, :, :, 
             draw_husband.update_school(husband)
             for exp_w in range(0, c.exp_size):           # loop over experience
                 wife.exp = c.exp_vector[exp_w]
+                wife.exp_2 = cmath.pow(wife.exp, 2)
                 for exp_h in range(0, c.exp_size):
                     husband.exp = c.exp_vector[exp_h]
                     for kids in range(0, 4):                # for each number of kids: 0, 1, 2,  - open loop of kids
